@@ -1,28 +1,40 @@
 {
   "name": "markdown-it-attrs",
-  "version": "0.0.0",
-  "description": "My incredible module",
+  "version": "0.0.1",
+  "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "license": "MIT",
   "repository": "arve0/markdown-it-attrs",
   "author": {
-    "name": "arve0",
+    "name": "Arve Seljebu",
     "email": "arve.seljebu@gmail.com",
-    "url": "github.com/arve0/markdown-it-attrs"
+    "url": "arve0.github.io"
   },
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "prepublish": "mocha",
+    "postpublish": "git tag v$npm_package_version; git push --tags"
   },
   "files": [
     "index.js"
   ],
+  "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [
-    ""
+    "markdown-it",
+    "markdown-it-plugin",
+    "attribute",
+    "class",
+    "id",
+    "identifier",
+    "curly brackets",
+    "pandoc",
+    "header_attributes"
   ],
   "dependencies": {},
   "devDependencies": {
+    "markdown-it": "^4.4.0",
     "mocha": "*"
   }
 }
