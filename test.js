@@ -44,4 +44,11 @@ describe('markdown-it-attrs', function() {
     assert.equal(expected, res);
   });
 
+  it('should support attributes inside " {attr="lorem ipsum"}', function () {
+    var src = 'some text {attr="lorem ipsum"}';
+    var expected = '<p attr="lorem ipsum">some text</p>\n';
+    var res = md.render(src);
+    assert.equal(expected, res);
+  });
+
 });

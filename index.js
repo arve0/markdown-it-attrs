@@ -36,6 +36,7 @@ module.exports = function attributes(md) {
       var key = '';
       var value = '';
       var parsingKey = true;
+      var valueInsideQuotes = false;
 
       // read inside {}, excluding {, including }
       for (var ii = curlyStart + 1; ii < content.length; ii++) {
@@ -54,14 +55,26 @@ module.exports = function attributes(md) {
           continue;
         }
 
+        // {#id}
         if (char === idChar && key === '') {
           key = 'id';
           parsingKey = false;
           continue;
         }
 
+        // {value="inside quotes"}
+        if (char === '"' && value === '') {
+          valueInsideQuotes = true;
+          continue;
+        }
+        if (char === '"' && valueInsideQuotes) {
+          valueInsideQuotes = false;
+          continue;
+        }
+
         // read next key/value pair
-        if (char === pairSeparator || char === '}') {
+        if ((char === pairSeparator && !valueInsideQuotes) ||
+            char === '}') {
           tokens[i - 1].attrPush([key, value]);
           key = '';
           value = '';
@@ -70,7 +83,7 @@ module.exports = function attributes(md) {
         }
 
         // continue if character not allowed
-        if (char.search(allowedKeyChars) === -1) {
+        if (parsingKey && char.search(allowedKeyChars) === -1) {
           continue;
         }
 
