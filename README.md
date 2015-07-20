@@ -10,11 +10,11 @@ paragraph {data-toggle=modal}
 
 Output:
 ```html
-<h1 class="myClass">header</h1>
+<h1 class="styleMe">header</h1>
 <p data-toggle="modal">paragraph</p>
 ```
 
-**Note:** Plugin does not validate any input, so you should validate the attributes in your html output to be secure.
+**Note:** Plugin does not validate any input, so you should validate the attributes in your html output if security is a concern.
 
 ## Install
 
@@ -36,4 +36,4 @@ console.log(md.render('paragraph {with=attrs .class #id}'));
 
 ## License
 
-MIT © [Arve Seljebu](https://github.com/arve0/markdown-it-attrs)
+MIT © [Arve Seljebu](http://arve0.github.io/)
