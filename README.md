@@ -11,6 +11,8 @@ paragraph {data-toggle=modal}
 Output:
 ```html
 <h1 class="myClass">header</h1>
+<p data-toggle="modal">paragraph</p>
+```
 
 **Note:** Plugin does not validate any input, so you should validate the attributes in your html output to be secure.
 
