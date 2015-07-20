@@ -1,0 +1,28 @@
+{
+  "name": "markdown-it-attrs",
+  "version": "0.0.0",
+  "description": "My incredible module",
+  "license": "MIT",
+  "repository": "arve0/markdown-it-attrs",
+  "author": {
+    "name": "arve0",
+    "email": "arve.seljebu@gmail.com",
+    "url": "github.com/arve0/markdown-it-attrs"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    ""
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "*"
+  }
+}
