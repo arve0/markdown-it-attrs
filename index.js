@@ -60,16 +60,17 @@ module.exports = function attributes(md) {
           continue;
         }
 
-        // continue if character not allowed
-        if (char.search(allowedKeyChars) === -1) {
-          continue;
-        }
-
         // read next key/value pair
         if (char === pairSeparator || char === '}') {
           tokens[i - 1].attrPush([key, value]);
           key = '';
           value = '';
+          parsingKey = true;
+          continue;
+        }
+
+        // continue if character not allowed
+        if (char.search(allowedKeyChars) === -1) {
           continue;
         }
 

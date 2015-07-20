@@ -37,4 +37,11 @@ describe('markdown-it-attrs', function() {
     assert.equal(expected, res);
   });
 
+  it('should support classes, identifiers and attributes in same {}', function () {
+    var src = 'some text {attr=lorem .class #id}';
+    var expected = '<p attr="lorem" class="class" id="id">some text</p>\n';
+    var res = md.render(src);
+    assert.equal(expected, res);
+  });
+
 });
