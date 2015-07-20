@@ -51,4 +51,10 @@ describe('markdown-it-attrs', function() {
     assert.equal(expected, res);
   });
 
+  it('should add classes in same class attribute {.c1 .c2} -> class="c1 c2"', function () {
+    var src = 'some text {.c1 .c2}';
+    var expected = '<p class="c1 c2">some text</p>\n';
+    var res = md.render(src);
+    assert.equal(expected, res);
+  });
 });

@@ -75,7 +75,13 @@ module.exports = function attributes(md) {
         // read next key/value pair
         if ((char === pairSeparator && !valueInsideQuotes) ||
             char === '}') {
-          tokens[i - 1].attrPush([key, value]);
+          if (key === 'class' &&
+              tokens[i - 1].attrIndex(key) !== -1) {
+            var classIdx = tokens[i - 1].attrIndex(key);
+            tokens[i - 1].attrs[classIdx][1] += ' ' + value;
+          } else {
+            tokens[i - 1].attrPush([key, value]);
+          }
           key = '';
           value = '';
           parsingKey = true;
