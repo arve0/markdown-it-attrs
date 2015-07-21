@@ -18,6 +18,9 @@ module.exports = function attributes(md) {
       }
 
       var inlineTokens = tokens[i].children;
+      if (inlineTokens.length <= 0) {
+        continue;
+      }
       var end = inlineTokens.length - 1;
       var content = inlineTokens[end].content;
 

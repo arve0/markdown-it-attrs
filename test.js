@@ -57,4 +57,9 @@ describe('markdown-it-attrs', function() {
     var res = md.render(src);
     assert.equal(expected, res);
   });
+
+  it('should support empty inline tokens', function(){
+    var src = ' 1 | 2 \n --|-- \n a | ';
+    md.render(src);  // should not crash / throw error
+  });
 });
