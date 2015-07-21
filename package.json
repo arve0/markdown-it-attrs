@@ -15,7 +15,7 @@
   "scripts": {
     "test": "mocha",
     "prepublish": "mocha",
-    "postpublish": "git tag v$npm_package_version; git push --tags"
+    "postpublish": "git push; git push --tags"
   },
   "files": [
     "index.js"
