@@ -5,7 +5,7 @@
  * @param {int} end: where to stop parsing (not including })
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
-function getAttrs(str, start, end) {
+exports.getAttrs = function(str, start, end) {
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
   var allowedKeyChars = /[^\t\n\f \/>"'=]/;
   var pairSeparator = ' ';
@@ -77,6 +77,22 @@ function getAttrs(str, start, end) {
   return attrs;
 }
 
-module.exports = {
-  getAttrs: getAttrs
+/**
+ * add attributes from [['key', 'val']] list
+ * @param {array} attrs: [['key', 'val']]
+ * @param {token} token: which token to add attributes
+ * @returns token
+ */
+exports.addAttrs = function(attrs, token) {
+  for (var j=0, l=attrs.length; j<l; ++j) {
+    var key = attrs[j][0];
+    if (key === 'class' && token.attrIndex('class') !== -1) {
+      // append space seperated text string
+      var classIdx = token.attrIndex('class');
+      token.attrs[classIdx][1] += ' ' + attrs[j][1];
+    } else {
+      token.attrPush(attrs[j]);
+    }
+  }
+  return token;
 }

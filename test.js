@@ -75,8 +75,9 @@ describe('markdown-it-attrs', function() {
   });
 
   it('should add classes to inline elements', function(){
-    var src = 'paragraph **bold**{.red}';
-    var expected = '<p>paragraph <strong class="red">bold</strong></p>\n';
-    md.render(src);  // should not crash / throw error
+    var src = 'paragraph **bold**{.red} asdf';
+    var expected = '<p>paragraph <strong class="red">bold</strong> asdf</p>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
   });
 });

@@ -5,9 +5,9 @@ var utils = require('./utils.js');
 module.exports = function attributes(md) {
 
   function curlyAttrs(state){
-    var l = state.tokens.length;
     var tokens = state.tokens;
-    for (var i = 0; i < l; i++) {
+    var l = tokens.length;
+    for (var i = 0; i < l; ++i) {
       if (tokens[i].type !== 'inline') {
         continue;
       }
@@ -15,6 +15,37 @@ module.exports = function attributes(md) {
       var inlineTokens = tokens[i].children;
       if (!inlineTokens || inlineTokens.length <= 0) {
         continue;
+      }
+
+      // find {} in inline tokens
+      for (var j=0, k=inlineTokens.length; j<k; ++j) {
+        if (inlineTokens[j].type === 'text' || inlineTokens[j].type === 'softbreak') {
+          continue;
+        }
+        // next token should be text and contain { in begining
+        if (!inlineTokens[j + 1]) {
+          continue;
+        }
+        if (inlineTokens[j + 1].type !== 'text') {
+          continue;
+        }
+        if (inlineTokens[j + 1].content[0] !== '{') {
+          continue;
+        }
+        // } should be found
+        var endChar = inlineTokens[j + 1].content.indexOf('}');
+        if (endChar === -1) {
+          continue;
+        }
+        var attrs = utils.getAttrs(inlineTokens[j + 1].content, 1, endChar);
+        // remove {.bla bla}
+        if (attrs.length !== 0) {
+          // remove {}
+          inlineTokens[j + 1].content = inlineTokens[j + 1].content.substr(endChar + 1);
+          // add attributes
+          utils.addAttrs(attrs, inlineTokens[j - 2]);
+        }
+
       }
 
       var end = inlineTokens.length - 1;
@@ -34,16 +65,7 @@ module.exports = function attributes(md) {
 
       // read inside {}
       var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
-      for (var j=0, l=attrs.length; j<l; ++j) {
-        var key = attrs[j][0];
-        if (key === 'class' && tokens[i - 1].attrIndex(key) !== -1) {
-          // append space seperated text string
-          var classIdx = tokens[i - 1].attrIndex(key);
-          tokens[i - 1].attrs[classIdx][1] += ' ' + attrs[j][1];
-        } else {
-          tokens[i - 1].attrPush(attrs[j]);
-        }
-      }
+      utils.addAttrs(attrs, tokens[i - 1]);
 
       inlineTokens[end].content = content.slice(0, curlyStart).trim();
 
