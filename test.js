@@ -9,7 +9,7 @@ describe('markdown-it-attrs.utils', function() {
     var src = '{.red #head key=val}';
     var expected = [['class', 'red'], ['id', 'head'], ['key', 'val']];
     var res = utils.getAttrs(src, 1, src.length-1);
-    assert.deepStrictEqual(res, expected);
+    assert.deepEqual(res, expected);
   });
 
 });
