@@ -14,7 +14,34 @@ Output:
 <p data-toggle="modal">paragraph</p>
 ```
 
+Works with inline elements too:
+```md
+paragraph *style me*{.red} more text
+```
+
+Output:
+```html
+<p>paragraph <em class="red">style me</me> more text</p>
+```
+
 **Note:** Plugin does not validate any input, so you should validate the attributes in your html output if security is a concern.
+
+
+## Ambiguity
+When class can be applied to both inline or block element, inline element will take precedence:
+```md
+- list item **bold**{.red}
+```
+
+Output:
+```html
+<ul>
+<li>list item <strong class="red">bold</strong></li>
+<ul>
+```
+
+If you need finer control, look into [decorate](https://github.com/rstacruz/markdown-it-decorate).
+
 
 ## Install
 
