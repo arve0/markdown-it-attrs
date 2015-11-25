@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-attrs",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "license": "MIT",
   "repository": "arve0/markdown-it-attrs",
@@ -15,7 +15,7 @@
   "scripts": {
     "test": "mocha",
     "prepublish": "mocha",
-    "postpublish": "git push; git push --tags"
+    "postpublish": "git tag $npm_package_version; git push --tags; git push"
   },
   "files": [
     "index.js"
