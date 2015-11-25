@@ -8,6 +8,8 @@ module.exports = function attributes(md) {
     var tokens = state.tokens;
     var l = tokens.length;
     for (var i = 0; i < l; ++i) {
+      // block tokens contain markup
+      // inline tokens contain the text
       if (tokens[i].type !== 'inline') {
         continue;
       }
@@ -17,59 +19,106 @@ module.exports = function attributes(md) {
         continue;
       }
 
-      // find {} in inline tokens
+      // attributes in inline tokens
       for (var j=0, k=inlineTokens.length; j<k; ++j) {
-        if (inlineTokens[j].type === 'text' || inlineTokens[j].type === 'softbreak') {
+        // should be inline token of type text
+        if (!inlineTokens[j] || inlineTokens[j].type !== 'text') {
           continue;
         }
-        // next token should be text and contain { in begining
-        if (!inlineTokens[j + 1]) {
+        // token before should not be opening
+        if (!inlineTokens[j - 1] || inlineTokens[j - 1].nesting === 1) {
           continue;
         }
-        if (inlineTokens[j + 1].type !== 'text') {
-          continue;
-        }
-        if (inlineTokens[j + 1].content[0] !== '{') {
+        // token should contain { in begining
+        if (inlineTokens[j].content[0] !== '{') {
           continue;
         }
         // } should be found
-        var endChar = inlineTokens[j + 1].content.indexOf('}');
+        var endChar = inlineTokens[j].content.indexOf('}');
         if (endChar === -1) {
           continue;
         }
-        var attrs = utils.getAttrs(inlineTokens[j + 1].content, 1, endChar);
-        // remove {.bla bla}
+        // which token to add attributes to
+        var attrToken = matchingOpeningToken(inlineTokens, j - 1);
+        if (!attrToken) {
+          continue;
+        }
+        var attrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
         if (attrs.length !== 0) {
           // remove {}
-          inlineTokens[j + 1].content = inlineTokens[j + 1].content.substr(endChar + 1);
+          inlineTokens[j].content = inlineTokens[j].content.substr(endChar + 1);
           // add attributes
-          utils.addAttrs(attrs, inlineTokens[j - 2]);
+          utils.addAttrs(attrs, attrToken);
         }
-
       }
 
-      var end = inlineTokens.length - 1;
-      var content = inlineTokens[end].content;
-
-      // should end in }
-      if (content.charAt(content.length - 1) !== '}') {
-        continue;
+      // attributes for blocks
+      if (hasCurlyEnd(tokens[i])) {
+        var content = last(inlineTokens).content;
+        var curlyStart = content.lastIndexOf('{');
+        var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
+        // some blocks are hidden, example li > paragraph_open
+        utils.addAttrs(attrs, firstTokenNotHidden(tokens, i - 1));
+        last(inlineTokens).content = content.slice(0, curlyStart).trim();
       }
-
-      var curlyStart = content.indexOf('{');
-
-      // should start with {
-      if (curlyStart === -1) {
-        continue;
-      }
-
-      // read inside {}
-      var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
-      utils.addAttrs(attrs, tokens[i - 1]);
-
-      inlineTokens[end].content = content.slice(0, curlyStart).trim();
 
     }
   }
   md.core.ruler.push('curly_attributes', curlyAttrs);
 };
+
+/**
+ * test if inline token has proper formated curly end
+ */
+function hasCurlyEnd(token) {
+  // we need minimum four chars, example {.b}
+  if (!token.content || token.content.length < 4) {
+    return false;
+  }
+
+  // should end in }
+  var content = token.content;
+  if (content.charAt(content.length - 1) !== '}') {
+    return false;
+  }
+
+  // should start with {
+  var curlyStart = content.indexOf('{');
+  if (curlyStart === -1) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * some blocks are hidden (not rendered)
+ */
+function firstTokenNotHidden(tokens, i) {
+  if (tokens[i].hidden) {
+    return firstTokenNotHidden(tokens, i - 1);
+  }
+  return tokens[i];
+}
+
+/**
+ * find corresponding opening block
+ */
+function matchingOpeningToken(tokens, i) {
+  if (tokens[i].type === 'softbreak') {
+    return false;
+  }
+  // non closing blocks, example img
+  if (tokens[i].nesting === 0) {
+    return tokens[i];
+  }
+  var type = tokens[i].type.replace('_close', '_open');
+  for (; i >= 0; --i) {
+    if (tokens[i].type === type) {
+      return tokens[i];
+    }
+  }
+}
+
+function last(arr) {
+  return arr.slice(-1)[0];
+}

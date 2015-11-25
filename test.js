@@ -11,7 +11,6 @@ describe('markdown-it-attrs.utils', function() {
     var res = utils.getAttrs(src, 1, src.length-1);
     assert.deepEqual(res, expected);
   });
-
 });
 
 describe('markdown-it-attrs', function() {
@@ -77,6 +76,32 @@ describe('markdown-it-attrs', function() {
   it('should add classes to inline elements', function(){
     var src = 'paragraph **bold**{.red} asdf';
     var expected = '<p>paragraph <strong class="red">bold</strong> asdf</p>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
+  it('should only remove last {}', function(){
+    var src = '{{.red}';
+    var expected = '<p class="red">{</p>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
+  it('should add classes for list items', function(){
+    var src = '- item 1{.red}\n- item 2';
+    var expected = '<ul>\n';
+    expected += '<li class="red">item 1</li>\n';
+    expected += '<li>item 2</li>\n';
+    expected += '</ul>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
+  it('should work with nested inline elements', function(){
+    var src = '- **bold *italics*{.blue}**{.green}';
+    var expected = '<ul>\n';
+    expected += '<li><strong class="green">bold <em class="blue">italics</em></strong></li>\n';
+    expected += '</ul>\n';
     var res = md.render(src);
     assert.equal(res, expected);
   });
