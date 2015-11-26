@@ -15,7 +15,7 @@
   "scripts": {
     "test": "mocha",
     "prepublish": "mocha",
-    "postpublish": "git tag v$npm_package_version; git push --tags; git push"
+    "postpublish": "git tag v$npm_package_version && git push --tags && git push"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [

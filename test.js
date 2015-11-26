@@ -105,4 +105,11 @@ describe('markdown-it-attrs', function() {
     var res = md.render(src);
     assert.equal(res, expected);
   });
+
+  it('should add class to inline code block', function(){
+    var src = 'bla `click()`{.c}';
+    var expected = '<p>bla <code class="c">click()</code></p>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
 });

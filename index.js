@@ -48,6 +48,7 @@ module.exports = function attributes(md) {
           // remove {}
           inlineTokens[j].content = inlineTokens[j].content.substr(endChar + 1);
           // add attributes
+          attrToken.info = "b";
           utils.addAttrs(attrs, attrToken);
         }
       }
@@ -65,8 +66,16 @@ module.exports = function attributes(md) {
     }
   }
   md.core.ruler.push('curly_attributes', curlyAttrs);
+  // render inline code blocks with attrs
+  md.renderer.rules.code_inline = renderCodeInline;
 };
 
+function renderCodeInline(tokens, idx, _, __, slf) {
+  var token = tokens[idx];
+  return '<code'+ slf.renderAttrs(token) +'>'
+       + utils.escapeHtml(tokens[idx].content)
+       + '</code>';
+}
 /**
  * test if inline token has proper formated curly end
  */
