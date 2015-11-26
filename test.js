@@ -112,4 +112,13 @@ describe('markdown-it-attrs', function() {
     var res = md.render(src);
     assert.equal(res, expected);
   });
+
+  it('should not trim unrelated white space', function(){
+    var src = '- **bold** text {.red}';
+    var expected = '<ul>\n';
+    expected += '<li class="red"><strong>bold</strong> text</li>\n';
+    expected += '</ul>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
 });

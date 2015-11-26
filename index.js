@@ -60,7 +60,11 @@ module.exports = function attributes(md) {
         var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
         // some blocks are hidden, example li > paragraph_open
         utils.addAttrs(attrs, firstTokenNotHidden(tokens, i - 1));
-        last(inlineTokens).content = content.slice(0, curlyStart).trim();
+        if (content[curlyStart - 1] === ' ') {
+          // trim space before {}
+          curlyStart -= 1;
+        }
+        last(inlineTokens).content = content.slice(0, curlyStart);
       }
 
     }
