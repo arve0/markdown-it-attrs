@@ -40,6 +40,20 @@ Output:
 <ul>
 ```
 
+If you need the class to apply to the list item instead:
+```md
+- list item **bold**
+{.red}
+```
+
+Output:
+```html
+<ul>
+<li class="red">list item <strong>bold</strong>
+</li>
+</ul>
+```
+
 If you need finer control, look into [decorate](https://github.com/rstacruz/markdown-it-decorate).
 
 
