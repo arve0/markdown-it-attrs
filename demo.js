@@ -1,10 +1,11 @@
 'use strict';
 var md = require('markdown-it')();
 var markdownItAttrs = require('./');
+var fs = require('fs');
 
 md.use(markdownItAttrs);
 
-var src = '# header {.green #id}\nsome text {with=attrs and="attrs with space"}';
+var src = fs.readFileSync('demo.md', 'utf8');
 var res = md.render(src);
 
 console.log(res);
