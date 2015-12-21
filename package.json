@@ -14,7 +14,8 @@
   },
   "scripts": {
     "test": "mocha",
-    "prepublish": "mocha"
+    "prepublish": "mocha",
+    "postpublish": "git push && git push --tags"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [

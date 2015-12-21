@@ -21,7 +21,7 @@ paragraph *style me*{.red} more text
 
 Output:
 ```html
-<p>paragraph <em class="red">style me</me> more text</p>
+<p>paragraph <em class="red">style me</em> more text</p>
 ```
 
 **Note:** Plugin does not validate any input, so you should validate the attributes in your html output if security is a concern.
