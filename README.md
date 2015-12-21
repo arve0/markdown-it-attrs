@@ -78,6 +78,7 @@ var res = md.render(src);
 console.log(res);
 ```
 
+[demo as jsfiddle](https://jsfiddle.net/arve0/hwy17omn/)
 
 ## License
 
