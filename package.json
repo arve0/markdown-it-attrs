@@ -33,5 +33,5 @@
     "markdown-it": "^4.4.0",
     "mocha": "*"
   },
-  "tonicExampleFile": "demo.js"
+  "tonicExampleFilename": "demo.js"
 }
