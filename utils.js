@@ -55,6 +55,10 @@ exports.getAttrs = function(str, start, end) {
 
     // read next key/value pair
     if ((char === pairSeparator && !valueInsideQuotes) || i === end) {
+      if (key === '') {
+        // beginning or ending space: { .red } vs {.red}
+        continue;
+      }
       attrs.push([key, value]);
       key = '';
       value = '';
