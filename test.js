@@ -121,4 +121,11 @@ describe('markdown-it-attrs', function() {
     var res = md.render(src);
     assert.equal(res, expected);
   });
+
+  it('should not create empty attributes', function(){
+    var src = 'text { .red }';
+    var expected = '<p class="red">text</p>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
 });
