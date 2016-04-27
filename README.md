@@ -40,7 +40,19 @@ Output:
 <ul>
 ```
 
-If you need the class to apply to the list item instead:
+If you need the class to apply to the list item instead, use a space:
+```md
+- list item **bold** {.red}
+```
+
+Output:
+```html
+<ul>
+<li class="red">list item <strong>bold</strong></li>
+</ul>
+```
+
+If you need the class to apply to the ul element, use a new line:
 ```md
 - list item **bold**
 {.red}
@@ -48,9 +60,8 @@ If you need the class to apply to the list item instead:
 
 Output:
 ```html
-<ul>
-<li class="red">list item <strong>bold</strong>
-</li>
+<ul class="red">
+<li>list item <strong>bold</strong></li>
 </ul>
 ```
 

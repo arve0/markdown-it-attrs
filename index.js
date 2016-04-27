@@ -58,13 +58,25 @@ module.exports = function attributes(md) {
         var content = last(inlineTokens).content;
         var curlyStart = content.lastIndexOf('{');
         var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
-        // some blocks are hidden, example li > paragraph_open
-        utils.addAttrs(attrs, firstTokenNotHidden(tokens, i - 1));
         if (content[curlyStart - 1] === ' ') {
           // trim space before {}
           curlyStart -= 1;
         }
-        last(inlineTokens).content = content.slice(0, curlyStart);
+        // if list and `\n{#c}` -> apply to bullet list open
+        // `- iii \n{#c}` -> `<ul id="c"><li>iii</li></ul>`
+        var nextLastInline = nextLast(inlineTokens);
+        var possibleBulletListOpen = secondTokenNotHidden(tokens, i - 1);
+        if (nextLastInline && possibleBulletListOpen &&
+            nextLastInline.type === 'softbreak' &&
+            possibleBulletListOpen.type === 'bullet_list_open') {
+          utils.addAttrs(attrs, secondTokenNotHidden(tokens, i - 1));
+          // remove softbreak and {} inline tokens
+          tokens[i].children = inlineTokens.slice(0, -2);
+        } else {
+          // some blocks are hidden, example li > paragraph_open
+          utils.addAttrs(attrs, firstTokenNotHidden(tokens, i - 1));
+          last(inlineTokens).content = content.slice(0, curlyStart);
+        }
       }
 
     }
@@ -107,10 +119,20 @@ function hasCurlyEnd(token) {
  * some blocks are hidden (not rendered)
  */
 function firstTokenNotHidden(tokens, i) {
-  if (tokens[i].hidden) {
+  if (tokens[i] && tokens[i].hidden) {
     return firstTokenNotHidden(tokens, i - 1);
   }
   return tokens[i];
+}
+
+/**
+ * same as firstTokenNotHidden, but sTNH([ tok1, tok2, hidden ], 2) gives tok1
+ */
+function secondTokenNotHidden(tokens, i) {
+  if (tokens[i] && tokens[i].hidden) {
+    return secondTokenNotHidden(tokens, i - 1);
+  }
+  return firstTokenNotHidden(tokens, i - 1);
 }
 
 /**
@@ -134,4 +156,8 @@ function matchingOpeningToken(tokens, i) {
 
 function last(arr) {
   return arr.slice(-1)[0];
+}
+
+function nextLast(arr) {
+  return arr.slice(-2, -1)[0];
 }
