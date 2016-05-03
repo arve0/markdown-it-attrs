@@ -13,7 +13,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "browser": "browserify --standalone index.js -o markdown-it-attrs.browser.js",
+    "browser": "browserify index.js --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
     "test": "mocha",
     "prepublish": "mocha && npm run browser",
     "postpublish": "git push && git push --tags"
