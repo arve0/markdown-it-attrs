@@ -13,8 +13,9 @@
     "node": ">=0.10.0"
   },
   "scripts": {
+    "browser": "browserify --standalone index.js -o markdown-it-attrs.browser.js",
     "test": "mocha",
-    "prepublish": "mocha",
+    "prepublish": "mocha && npm run browser",
     "postpublish": "git push && git push --tags"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
@@ -31,6 +32,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "browserify": "^13.0.0",
     "markdown-it": "^4.4.0",
     "mocha": "*"
   },
