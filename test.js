@@ -135,4 +135,11 @@ describe('markdown-it-attrs', function() {
     var res = md.render(src);
     assert.equal(res, expected);
   });
+
+  it('should work with typography enabled', function(){
+    var src = 'text {key="val with spaces"}';
+    var expected = '<p key="val with spaces">text</p>\n';
+    var res = md.set({ typographer: true }).render(src);
+    assert.equal(res, expected);
+  });
 });
