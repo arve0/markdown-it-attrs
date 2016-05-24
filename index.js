@@ -81,7 +81,7 @@ module.exports = function attributes(md) {
 
     }
   }
-  md.core.ruler.push('curly_attributes', curlyAttrs);
+  md.core.ruler.before('replacements', 'curly_attributes', curlyAttrs);
   // render inline code blocks with attrs
   md.renderer.rules.code_inline = renderCodeInline;
 };
