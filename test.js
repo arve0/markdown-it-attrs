@@ -142,4 +142,18 @@ describe('markdown-it-attrs', function() {
     var res = md.set({ typographer: true }).render(src);
     assert.equal(res, expected);
   });
+
+  it('should support code blocks', function(){
+    var src = '```{.c a=1 #ii}\nfor i in range(10):\n```';
+    var expected = '<pre><code class="c" a="1" id="ii">for i in range(10):\n</code></pre>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
+  it('should support code blocks with language defined', function(){
+    var src = '```python {.c a=1 #ii}\nfor i in range(10):\n```';
+    var expected = '<pre><code class="c language-python" a="1" id="ii">for i in range(10):\n</code></pre>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
 });

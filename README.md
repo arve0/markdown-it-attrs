@@ -24,6 +24,20 @@ Output:
 <p>paragraph <em class="red">style me</em> more text</p>
 ```
 
+And fenced code blocks:
+<pre><code>
+```python {data=asdf}
+nums = [x for x in range(10)]
+```
+</code></pre>
+
+Output:
+```html
+<pre><code data="asdf" class="language-python">
+nums = [x for x in range(10)]
+</code></pre>
+```
+
 **Note:** Plugin does not validate any input, so you should validate the attributes in your html output if security is a concern.
 
 
