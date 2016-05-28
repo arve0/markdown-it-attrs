@@ -8,6 +8,15 @@ module.exports = function attributes(md) {
     var tokens = state.tokens;
     var l = tokens.length;
     for (var i = 0; i < l; ++i) {
+      // fenced code blocks
+      if (tokens[i].type === 'fence' && hasCurly(tokens[i].info)) {
+        var codeCurlyStart = tokens[i].info.indexOf('{');
+        var codeCurlyEnd = tokens[i].info.indexOf('}');
+        var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
+        utils.addAttrs(codeAttrs, tokens[i]);
+        tokens[i].info = tokens[i].info.substring(0, codeCurlyStart);
+        continue;
+      }
       // block tokens contain markup
       // inline tokens contain the text
       if (tokens[i].type !== 'inline') {
@@ -54,7 +63,7 @@ module.exports = function attributes(md) {
       }
 
       // attributes for blocks
-      if (hasCurlyEnd(tokens[i])) {
+      if (hasCurly(tokens[i].content)) {
         var content = last(inlineTokens).content;
         var curlyStart = content.lastIndexOf('{');
         var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
@@ -93,23 +102,21 @@ function renderCodeInline(tokens, idx, _, __, slf) {
        + '</code>';
 }
 /**
- * test if inline token has proper formated curly end
+ * test if string has proper formated curly
  */
-function hasCurlyEnd(token) {
+function hasCurly(str) {
   // we need minimum four chars, example {.b}
-  if (!token.content || token.content.length < 4) {
+  if (!str || !str.length || str.length < 4) {
     return false;
   }
 
   // should end in }
-  var content = token.content;
-  if (content.charAt(content.length - 1) !== '}') {
+  if (str.charAt(str.length - 1) !== '}') {
     return false;
   }
 
   // should start with {
-  var curlyStart = content.indexOf('{');
-  if (curlyStart === -1) {
+  if (str.indexOf('{') === -1) {
     return false;
   }
   return true;

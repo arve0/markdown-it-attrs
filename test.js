@@ -144,8 +144,15 @@ describe('markdown-it-attrs', function() {
   });
 
   it('should support code blocks', function(){
-    var src = '```python {.c}\nfor i in range(10):\n```';
-    var expected = '<pre><code class="language-python c">for i in range(10):\n</code></pre>\n';
+    var src = '```{.c a=1 #ii}\nfor i in range(10):\n```';
+    var expected = '<pre><code class="c" a="1" id="ii">for i in range(10):\n</code></pre>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
+  it('should support code blocks with language defined', function(){
+    var src = '```python {.c a=1 #ii}\nfor i in range(10):\n```';
+    var expected = '<pre><code class="c" a="1" id="ii" class="language-python">for i in range(10):\n</code></pre>\n';
     var res = md.render(src);
     assert.equal(res, expected);
   });
