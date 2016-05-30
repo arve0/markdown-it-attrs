@@ -9,9 +9,9 @@ module.exports = function attributes(md) {
     var l = tokens.length;
     for (var i = 0; i < l; ++i) {
       // fenced code blocks
-      if (tokens[i].type === 'fence' && hasCurly(tokens[i].info)) {
+      if (tokens[i].block && tokens[i].info && hasCurly(tokens[i].info)) {
         var codeCurlyStart = tokens[i].info.indexOf('{');
-        var codeCurlyEnd = tokens[i].info.indexOf('}');
+        var codeCurlyEnd = tokens[i].info.length - 1;
         var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
         utils.addAttrs(codeAttrs, tokens[i]);
         tokens[i].info = tokens[i].info.substring(0, codeCurlyStart);
