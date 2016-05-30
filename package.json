@@ -15,7 +15,7 @@
   "scripts": {
     "browser": "browserify index.js --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
     "test": "mocha",
-    "prepublish": "mocha && npm run browser",
+    "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
     "postpublish": "git push && git push --tags"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
