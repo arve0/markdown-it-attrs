@@ -130,8 +130,8 @@ describe('markdown-it-attrs', function() {
   });
 
   it('should add attributes to ul when below last bullet point', function(){
-    var src = '- item\n{.red}';
-    var expected = '<ul class="red">\n<li>item</li>\n</ul>\n';
+    var src = '- item1\n- item2\n{.red}';
+    var expected = '<ul class="red">\n<li>item1</li>\n<li>item2</li>\n</ul>\n';
     var res = md.render(src);
     assert.equal(res, expected);
   });
