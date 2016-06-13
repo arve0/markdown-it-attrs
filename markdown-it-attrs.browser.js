@@ -75,16 +75,15 @@ module.exports = function attributes(md) {
         // if list and `\n{#c}` -> apply to bullet list open
         // `- iii \n{#c}` -> `<ul id="c"><li>iii</li></ul>`
         var nextLastInline = nextLast(inlineTokens);
-        var possibleBulletListOpen = secondTokenNotHidden(tokens, i - 1);
-        if (nextLastInline && possibleBulletListOpen &&
-            nextLastInline.type === 'softbreak' &&
-            possibleBulletListOpen.type === 'bullet_list_open') {
-          utils.addAttrs(attrs, secondTokenNotHidden(tokens, i - 1));
+        var correspondingBlock = firstTokenNotHidden(tokens, i - 1);
+        if (nextLastInline && nextLastInline.type === 'softbreak' &&
+            correspondingBlock && correspondingBlock.type === 'list_item_open') {
+          utils.addAttrs(attrs, bulletListOpen(tokens, i - 1));
           // remove softbreak and {} inline tokens
           tokens[i].children = inlineTokens.slice(0, -2);
         } else {
           // some blocks are hidden, example li > paragraph_open
-          utils.addAttrs(attrs, firstTokenNotHidden(tokens, i - 1));
+          utils.addAttrs(attrs, correspondingBlock);
           last(inlineTokens).content = content.slice(0, curlyStart);
         }
       }
@@ -134,13 +133,13 @@ function firstTokenNotHidden(tokens, i) {
 }
 
 /**
- * same as firstTokenNotHidden, but sTNH([ tok1, tok2, hidden ], 2) gives tok1
+ * Find first bullet list open.
  */
-function secondTokenNotHidden(tokens, i) {
-  if (tokens[i] && tokens[i].hidden) {
-    return secondTokenNotHidden(tokens, i - 1);
+function bulletListOpen(tokens, i) {
+  if (tokens[i] && tokens[i].type !== 'bullet_list_open') {
+    return bulletListOpen(tokens, i - 1);
   }
-  return firstTokenNotHidden(tokens, i - 1);
+  return tokens[i];
 }
 
 /**
