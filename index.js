@@ -14,7 +14,7 @@ module.exports = function attributes(md) {
         var codeCurlyEnd = tokens[i].info.length - 1;
         var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
         utils.addAttrs(codeAttrs, tokens[i]);
-        tokens[i].info = tokens[i].info.slice(0, codeCurlyStart);
+        tokens[i].info = removeCurly(tokens[i].info);
         continue;
       }
       // block tokens contain markup
@@ -85,7 +85,6 @@ module.exports = function attributes(md) {
         }
         var attrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
         if (attrs.length !== 0) {
-          debugger;
           // remove {}
           inlineTokens[j].content = inlineTokens[j].content.slice(endChar + 1);
           // add attributes
@@ -99,10 +98,6 @@ module.exports = function attributes(md) {
         var content = last(inlineTokens).content;
         var curlyStart = content.lastIndexOf('{');
         var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
-        if (content[curlyStart - 1] === ' ') {
-          // trim space before {}
-          curlyStart -= 1;
-        }
         // if list and `\n{#c}` -> apply to bullet list open:
         //
         // - iii
@@ -131,7 +126,7 @@ module.exports = function attributes(md) {
           }
         } else {
           utils.addAttrs(attrs, correspondingBlock);
-          last(inlineTokens).content = content.slice(0, curlyStart);
+          last(inlineTokens).content = removeCurly(content);
           tokens[i].content = removeCurly(tokens[i].content);
         }
       }
@@ -139,16 +134,8 @@ module.exports = function attributes(md) {
     }
   }
   md.core.ruler.before('replacements', 'curly_attributes', curlyAttrs);
-  // render inline code blocks with attrs
-  md.renderer.rules.code_inline = renderCodeInline;
 };
 
-function renderCodeInline(tokens, idx, _, __, slf) {
-  var token = tokens[idx];
-  return '<code'+ slf.renderAttrs(token) +'>'
-       + utils.escapeHtml(tokens[idx].content)
-       + '</code>';
-}
 /**
  * test if string has proper formated curly
  */
@@ -212,7 +199,7 @@ function matchingOpeningToken(tokens, i) {
  * Removes last curly from string.
  */
 function removeCurly(str) {
-  var curly = /\n?{[^}]+}$/;
+  var curly = /[ \n]?{[^{}}]+}$/;
   var pos = str.search(curly);
 
   return pos !== -1 ? str.slice(0, pos) : str;

@@ -33,8 +33,11 @@
   "dependencies": {},
   "devDependencies": {
     "browserify": "^13.0.0",
-    "markdown-it": "^6.0.2",
+    "markdown-it": "^7.0.0",
     "mocha": "*"
+  },
+  "peerDependencies": {
+    "markdown-it": ">=6.1.1"
   },
   "tonicExampleFilename": "demo.js"
 }
