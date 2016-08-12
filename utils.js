@@ -90,10 +90,8 @@ exports.getAttrs = function(str, start, end) {
 exports.addAttrs = function(attrs, token) {
   for (var j=0, l=attrs.length; j<l; ++j) {
     var key = attrs[j][0];
-    if (key === 'class' && token.attrIndex('class') !== -1) {
-      // append space seperated text string
-      var classIdx = token.attrIndex('class');
-      token.attrs[classIdx][1] += ' ' + attrs[j][1];
+    if (key === 'class') {
+      token.attrJoin('class', attrs[j][1]);
     } else {
       token.attrPush(attrs[j]);
     }
