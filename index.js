@@ -14,7 +14,7 @@ module.exports = function attributes(md) {
         var codeCurlyEnd = tokens[i].info.length - 1;
         var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
         utils.addAttrs(codeAttrs, tokens[i]);
-        tokens[i].info = tokens[i].info.substring(0, codeCurlyStart);
+        tokens[i].info = tokens[i].info.slice(0, codeCurlyStart);
         continue;
       }
       // block tokens contain markup
@@ -28,7 +28,38 @@ module.exports = function attributes(md) {
         continue;
       }
 
-      // attributes in inline tokens
+      // attributes in inline tokens:
+      // inline **bold**{.red} text
+      // {
+      //   "type": "strong_close",
+      //   "tag": "strong",
+      //   "attrs": null,
+      //   "map": null,
+      //   "nesting": -1,
+      //   "level": 0,
+      //   "children": null,
+      //   "content": "",
+      //   "markup": "**",
+      //   "info": "",
+      //   "meta": null,
+      //   "block": false,
+      //   "hidden": false
+      // },
+      // {
+      //   "type": "text",
+      //   "tag": "",
+      //   "attrs": null,
+      //   "map": null,
+      //   "nesting": 0,
+      //   "level": 0,
+      //   "children": null,
+      //   "content": "{.red} text",
+      //   "markup": "",
+      //   "info": "",
+      //   "meta": null,
+      //   "block": false,
+      //   "hidden": false
+      // }
       for (var j=0, k=inlineTokens.length; j<k; ++j) {
         // should be inline token of type text
         if (!inlineTokens[j] || inlineTokens[j].type !== 'text') {
@@ -54,8 +85,9 @@ module.exports = function attributes(md) {
         }
         var attrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
         if (attrs.length !== 0) {
+          debugger;
           // remove {}
-          inlineTokens[j].content = inlineTokens[j].content.substr(endChar + 1);
+          inlineTokens[j].content = inlineTokens[j].content.slice(endChar + 1);
           // add attributes
           attrToken.info = "b";
           utils.addAttrs(attrs, attrToken);
@@ -71,19 +103,36 @@ module.exports = function attributes(md) {
           // trim space before {}
           curlyStart -= 1;
         }
-        // if list and `\n{#c}` -> apply to bullet list open
-        // `- iii \n{#c}` -> `<ul id="c"><li>iii</li></ul>`
+        // if list and `\n{#c}` -> apply to bullet list open:
+        //
+        // - iii
+        // {#c}
+        //
+        // should give
+        //
+        // <ul id="c">
+        //   <li>iii</li>
+        // </ul>
         var nextLastInline = nextLast(inlineTokens);
+        // some blocks are hidden, example li > paragraph_open
         var correspondingBlock = firstTokenNotHidden(tokens, i - 1);
         if (nextLastInline && nextLastInline.type === 'softbreak' &&
             correspondingBlock && correspondingBlock.type === 'list_item_open') {
           utils.addAttrs(attrs, bulletListOpen(tokens, i - 1));
           // remove softbreak and {} inline tokens
           tokens[i].children = inlineTokens.slice(0, -2);
+          tokens[i].content = removeCurly(tokens[i].content);
+          if (hasCurly(tokens[i].content)) {
+            // do once more:
+            //
+            // - item {.a}
+            // {.b} <-- applied this
+            i -= 1;
+          }
         } else {
-          // some blocks are hidden, example li > paragraph_open
           utils.addAttrs(attrs, correspondingBlock);
           last(inlineTokens).content = content.slice(0, curlyStart);
+          tokens[i].content = removeCurly(tokens[i].content);
         }
       }
 
@@ -158,6 +207,15 @@ function matchingOpeningToken(tokens, i) {
       return tokens[i];
     }
   }
+}
+/**
+ * Removes last curly from string.
+ */
+function removeCurly(str) {
+  var curly = /\n?{[^}]+}$/;
+  var pos = str.search(curly);
+
+  return pos !== -1 ? str.slice(0, pos) : str;
 }
 
 function last(arr) {
