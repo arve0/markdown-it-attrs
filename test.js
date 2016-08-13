@@ -137,6 +137,15 @@ describe('markdown-it-attrs', function() {
     assert.equal(res, expected);
   });
 
+  it('should add classes for both last list item and ul', function(){
+    var src = '- item{.red}\n{.blue}';
+    var expected = '<ul class="blue">\n';
+    expected += '<li class="red">item</li>\n';
+    expected += '</ul>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
   it('should work with typography enabled', function(){
     var src = 'text {key="val with spaces"}';
     var expected = '<p key="val with spaces">text</p>\n';
