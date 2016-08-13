@@ -53,13 +53,13 @@ module.exports = function attributes(md) {
         if (!attrToken) {
           continue;
         }
-        var attrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
-        if (attrs.length !== 0) {
+        var inlineAttrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
+        if (inlineAttrs.length !== 0) {
           // remove {}
           inlineTokens[j].content = inlineTokens[j].content.substr(endChar + 1);
           // add attributes
-          attrToken.info = "b";
-          utils.addAttrs(attrs, attrToken);
+          attrToken.info = 'b';
+          utils.addAttrs(inlineAttrs, attrToken);
         }
       }
 
@@ -170,6 +170,7 @@ function nextLast(arr) {
 }
 
 },{"./utils.js":2}],2:[function(require,module,exports){
+'use strict';
 /**
  * parse {.class #id key=val} strings
  * @param {string} str: string to parse
@@ -193,40 +194,40 @@ exports.getAttrs = function(str, start, end) {
 
   // read inside {}
   for (var i=start; i <= end; ++i) {
-    var char = str.charAt(i);
+    var char_ = str.charAt(i);
 
     // switch to reading value if equal sign
-    if (char === keySeparator) {
+    if (char_ === keySeparator) {
       parsingKey = false;
       continue;
     }
 
     // {.class}
-    if (char === classChar && key === '') {
+    if (char_ === classChar && key === '') {
       key = 'class';
       parsingKey = false;
       continue;
     }
 
     // {#id}
-    if (char === idChar && key === '') {
+    if (char_ === idChar && key === '') {
       key = 'id';
       parsingKey = false;
       continue;
     }
 
     // {value="inside quotes"}
-    if (char === '"' && value === '') {
+    if (char_ === '"' && value === '') {
       valueInsideQuotes = true;
       continue;
     }
-    if (char === '"' && valueInsideQuotes) {
+    if (char_ === '"' && valueInsideQuotes) {
       valueInsideQuotes = false;
       continue;
     }
 
     // read next key/value pair
-    if ((char === pairSeparator && !valueInsideQuotes) || i === end) {
+    if ((char_ === pairSeparator && !valueInsideQuotes) || i === end) {
       if (key === '') {
         // beginning or ending space: { .red } vs {.red}
         continue;
@@ -239,19 +240,19 @@ exports.getAttrs = function(str, start, end) {
     }
 
     // continue if character not allowed
-    if (parsingKey && char.search(allowedKeyChars) === -1) {
+    if (parsingKey && char_.search(allowedKeyChars) === -1) {
       continue;
     }
 
     // no other conditions met; append to key/value
     if (parsingKey) {
-      key += char;
+      key += char_;
       continue;
     }
-    value += char;
+    value += char_;
   }
   return attrs;
-}
+};
 
 /**
  * add attributes from [['key', 'val']] list
@@ -271,7 +272,7 @@ exports.addAttrs = function(attrs, token) {
     }
   }
   return token;
-}
+};
 
 /**
  * from https://github.com/markdown-it/markdown-it/blob/master/lib/common/utils.js
@@ -294,7 +295,7 @@ exports.escapeHtml = function(str) {
     return str.replace(HTML_ESCAPE_REPLACE_RE, replaceUnsafeChar);
   }
   return str;
-}
+};
 
 },{}]},{},[1])(1)
 });

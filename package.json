@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-attrs",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "license": "MIT",
   "repository": "arve0/markdown-it-attrs",
@@ -14,9 +14,10 @@
   },
   "scripts": {
     "browser": "browserify index.js --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
-    "test": "mocha",
+    "lint": "eslint .",
     "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
-    "postpublish": "git push && git push --tags"
+    "postpublish": "git push && git push --tags",
+    "test": "npm run lint && mocha"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [
@@ -33,11 +34,12 @@
   "dependencies": {},
   "devDependencies": {
     "browserify": "^13.0.0",
-    "markdown-it": "^7.0.0",
+    "eslint": "^3.3.0",
+    "markdown-it": "^6.0.2",
     "mocha": "*"
   },
   "peerDependencies": {
-    "markdown-it": ">=6.1.1"
+    "markdown-it": "<6.1.1"
   },
   "tonicExampleFilename": "demo.js"
 }
