@@ -52,13 +52,13 @@ module.exports = function attributes(md) {
         if (!attrToken) {
           continue;
         }
-        var attrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
-        if (attrs.length !== 0) {
+        var inlineAttrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
+        if (inlineAttrs.length !== 0) {
           // remove {}
           inlineTokens[j].content = inlineTokens[j].content.substr(endChar + 1);
           // add attributes
-          attrToken.info = "b";
-          utils.addAttrs(attrs, attrToken);
+          attrToken.info = 'b';
+          utils.addAttrs(inlineAttrs, attrToken);
         }
       }
 
