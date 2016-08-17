@@ -35,11 +35,11 @@
   "devDependencies": {
     "browserify": "^13.0.0",
     "eslint": "^3.3.0",
-    "markdown-it": "^6.0.2",
+    "markdown-it": ">=7.0.1",
     "mocha": "*"
   },
   "peerDependencies": {
-    "markdown-it": "<6.1.1"
+    "markdown-it": ">=7.0.1"
   },
   "tonicExampleFilename": "demo.js"
 }
