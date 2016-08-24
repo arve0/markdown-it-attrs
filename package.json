@@ -3,7 +3,6 @@
   "version": "0.6.3",
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "main": "index.js",
-  "browser": "./markdown-it-attrs.browser.js",
   "license": "MIT",
   "repository": "arve0/markdown-it-attrs",
   "author": {
