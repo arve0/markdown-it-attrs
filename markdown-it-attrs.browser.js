@@ -172,7 +172,9 @@ function firstTokenNotHidden(tokens, i) {
  * Find first bullet list open.
  */
 function bulletListOpen(tokens, i) {
-  if (tokens[i] && tokens[i].type !== 'bullet_list_open') {
+  if (tokens[i] &&
+      tokens[i].type !== 'bullet_list_open' &&
+      tokens[i].type !== 'ordered_list_open') {
     return bulletListOpen(tokens, i - 1);
   }
   return tokens[i];
