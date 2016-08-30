@@ -146,6 +146,15 @@ describe('markdown-it-attrs', function() {
     assert.equal(res, expected);
   });
 
+  it('should work with ordered lists', function(){
+    var src = '1. item\n{.blue}';
+    var expected = '<ol class="blue">\n';
+    expected += '<li>item</li>\n';
+    expected += '</ul>\n';
+    var res = md.render(src);
+    assert.equal(res, expected);
+  });
+
   it('should work with typography enabled', function(){
     var src = 'text {key="val with spaces"}';
     var expected = '<p key="val with spaces">text</p>\n';
