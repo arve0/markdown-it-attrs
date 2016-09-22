@@ -94,8 +94,10 @@ module.exports = function attributes(md) {
       }
 
       // attributes for blocks
+      var lastInlineToken;
       if (hasCurly(tokens[i].content)) {
-        var content = last(inlineTokens).content;
+        lastInlineToken = last(inlineTokens);
+        var content = lastInlineToken.content;
         var curlyStart = content.lastIndexOf('{');
         var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
         // if list and `\n{#c}` -> apply to bullet list open:
@@ -126,7 +128,11 @@ module.exports = function attributes(md) {
           }
         } else {
           utils.addAttrs(attrs, correspondingBlock);
-          last(inlineTokens).content = removeCurly(content);
+          lastInlineToken.content = removeCurly(content);
+          if (lastInlineToken.content === '') {
+            // remove empty inline token
+            inlineTokens.pop();
+          }
           tokens[i].content = removeCurly(tokens[i].content);
         }
       }
