@@ -25,9 +25,13 @@
     "markdown-it",
     "markdown-it-plugin",
     "attribute",
+    "attributes",
     "class",
+    "classes",
     "id",
+    "ids",
     "identifier",
+    "identifiers",
     "curly brackets",
     "pandoc",
     "header_attributes"
