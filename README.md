@@ -79,6 +79,41 @@ Output:
 </ul>
 ```
 
+Unfortunately, as of now, attributes on new line will apply to opening `ul` or `ol` for previous list item:
+```md
+- applies to
+  - ul of last
+  {.list}
+{.item}
+
+
+- here
+  - we get
+  {.blue}
+- what's expected
+{.red}
+```
+
+Which is not what you might expect. [Suggestions are welcome](https://github.com/arve0/markdown-it-attrs/issues/32). #. Output:
+```html
+<ul>
+  <li>applies
+    <ul class="item list">
+      <li>ul of last</li>
+    </ul>
+  </li>
+</ul>
+
+<ul class="red">
+  <li>here
+    <ul class="blue">
+      <li>we get</li>
+    </ul>
+  </li>
+  <li>what's expected</li>
+</ul>
+```
+
 If you need finer control, look into [decorate](https://github.com/rstacruz/markdown-it-decorate).
 
 
