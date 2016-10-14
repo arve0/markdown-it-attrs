@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [
+    "commonmark",
     "markdown",
     "markdown-it",
     "markdown-it-plugin",
