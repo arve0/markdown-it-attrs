@@ -88,6 +88,29 @@ describe('markdown-it-attrs', () => {
     assert.equal(md.render(src), expected);
   });
 
+  it('should add classes in nested lists', () => {
+    src = '- item 1{.a}\n';
+    src += '  - nested item {.b}\n';
+    src += '  {.c}\n';
+    src += '    1. nested nested item {.d}\n';
+    src += '    {.e}\n';
+// Adding class to top ul not supported
+//    src += '{.f}';
+//    expected = '<ul class="f">\n';
+    expected = '<ul>\n';
+    expected += '<li class="a">item 1\n';
+    expected += '<ul class="c">\n';
+    expected += '<li class="b">nested item\n';
+    expected += '<ol class="e">\n';
+    expected += '<li class="d">nested nested item</li>\n';
+    expected += '</ol>\n';
+    expected += '</li>\n';
+    expected += '</ul>\n';
+    expected += '</li>\n';
+    expected += '</ul>\n';
+    assert.equal(md.render(src), expected);
+  });
+
   it('should work with nested inline elements', () => {
     src = '- **bold *italics*{.blue}**{.green}';
     expected = '<ul>\n';

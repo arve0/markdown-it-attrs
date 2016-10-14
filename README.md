@@ -79,6 +79,25 @@ Output:
 </ul>
 ```
 
+Unfortunately, as of now, attributes on new line will apply to last opening `ul` or `ol`:
+```md
+- item
+  - nested
+  {.red}
+{.blue}
+```
+
+Which is not what you might expect. [Suggestions are welcome](https://github.com/arve0/markdown-it-attrs/issues/32). #. Output:
+```html
+<ul>
+<li>item
+  <ul class="blue red">
+    <li>nested</li>
+  </ul>
+</li>
+</ul>
+```
+
 If you need finer control, look into [decorate](https://github.com/rstacruz/markdown-it-decorate).
 
 
