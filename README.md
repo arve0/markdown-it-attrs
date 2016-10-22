@@ -94,7 +94,7 @@ Unfortunately, as of now, attributes on new line will apply to opening `ul` or `
 {.red}
 ```
 
-Which is not what you might expect. [Suggestions are welcome](https://github.com/arve0/markdown-it-attrs/issues/32). #. Output:
+Which is not what you might expect. [Suggestions are welcome](https://github.com/arve0/markdown-it-attrs/issues/32). Output:
 ```html
 <ul>
   <li>applies
