@@ -41,6 +41,30 @@ nums = [x for x in range(10)]
 **Note:** Plugin does not validate any input, so you should validate the attributes in your html output if security is a concern.
 
 
+## Install
+
+```
+$ npm install --save markdown-it-attrs
+```
+
+
+## Usage
+
+```js
+var md = require('markdown-it')();
+var markdownItAttrs = require('markdown-it-attrs');
+
+md.use(markdownItAttrs);
+
+var src = '# header {.green #id}\nsome text {with=attrs and="attrs with space"}';
+var res = md.render(src);
+
+console.log(res);
+```
+
+[demo as jsfiddle](https://jsfiddle.net/arve0/hwy17omn/)
+
+
 ## Ambiguity
 When class can be applied to both inline or block element, inline element will take precedence:
 ```md
@@ -115,30 +139,6 @@ Which is not what you might expect. [Suggestions are welcome](https://github.com
 ```
 
 If you need finer control, look into [decorate](https://github.com/rstacruz/markdown-it-decorate).
-
-
-## Install
-
-```
-$ npm install --save markdown-it-attrs
-```
-
-
-## Usage
-
-```js
-var md = require('markdown-it')();
-var markdownItAttrs = require('markdown-it-attrs');
-
-md.use(markdownItAttrs);
-
-var src = '# header {.green #id}\nsome text {with=attrs and="attrs with space"}';
-var res = md.render(src);
-
-console.log(res);
-```
-
-[demo as jsfiddle](https://jsfiddle.net/arve0/hwy17omn/)
 
 
 ## Custom blocks
