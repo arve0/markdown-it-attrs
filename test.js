@@ -164,7 +164,8 @@ describe('markdown-it-attrs', () => {
   it('should work with typography enabled', () => {
     src = 'text {key="val with spaces"}';
     expected = '<p key="val with spaces">text</p>\n';
-    assert.equal(md.render(src), expected);
+    var res = md.set({ typographer: true }).render(src);
+    assert.equal(res, expected);
   });
 
   it('should support code blocks', () => {
