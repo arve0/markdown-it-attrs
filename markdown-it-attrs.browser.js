@@ -140,7 +140,7 @@ module.exports = function attributes(md) {
 
     }
   }
-  md.core.ruler.before('replacements', 'curly_attributes', curlyAttrs);
+  md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
 };
 
 /**
