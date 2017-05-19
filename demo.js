@@ -7,6 +7,4 @@ md.use(markdownItAttrs);
 var src = '# header {.style-me}\n';
 src += 'paragraph {data-toggle=modal}';
 
-var res = md.render(src);
-
-console.log(res);  // eslint-disable-line
+md.render(src);
