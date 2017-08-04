@@ -2,12 +2,9 @@
 var md = require('markdown-it')();
 var markdownItAttrs = require('./');
 
-md.use(markdownItAttrs);
+md.use(markdownItAttrs).use(require('../markdown-it-implicit-figures'));
 
-var src = `- i1
-  - n1
-  {.first}
-{.second}`;
+var src = `[![Image](fig.png)](page.html){target="_blank"}`;  // eslint-disable-line
 
 var res = md.render(src);
 

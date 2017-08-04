@@ -179,4 +179,11 @@ describe('markdown-it-attrs', () => {
     expected = '<pre><code class="c language-python" a="1" id="ii">for i in range(10):\n</code></pre>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support blockquotes', () => {
+    src = '> quote\n{.c}';
+    expected = '<blockquote class="c">\n<p>quote\n</p>\n</blockquote>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
+
