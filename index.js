@@ -1,22 +1,35 @@
 'use strict';
 
-var utils = require('./utils.js');
+const utils = require('./utils.js');
+const patterns = require('./patterns.js');
 
 module.exports = function attributes(md) {
 
   function curlyAttrs(state){
     var tokens = state.tokens;
     var l = tokens.length;
+
     for (var i = 0; i < l; ++i) {
-      // fenced code blocks
-      if (tokens[i].block && tokens[i].info && hasCurly(tokens[i].info)) {
-        var codeCurlyStart = tokens[i].info.indexOf('{');
-        var codeCurlyEnd = tokens[i].info.length - 1;
-        var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
-        utils.addAttrs(codeAttrs, tokens[i]);
-        tokens[i].info = removeCurly(tokens[i].info);
-        continue;
+      let token = tokens[i];
+      let pattern;
+      if (token.block) {
+        pattern = getMatchingPattern(tokens, i, 'block');
+        if (pattern) {
+          pattern.transform(tokens, i);
+          continue;
+        }
+        if (token.type === 'inline') {
+          let children = tokens[i].children;
+          for (let j = 0; j < children.length; ++j) {
+            pattern = getMatchingPattern(children, j, 'inline');
+            if (pattern) {
+              pattern.transform(children, j);
+              continue;
+            }
+          }
+        }
       }
+
       // block tokens contain markup
       // inline tokens contain the text
       if (tokens[i].type !== 'inline') {
@@ -28,74 +41,9 @@ module.exports = function attributes(md) {
         continue;
       }
 
-      // attributes in inline tokens:
-      // inline **bold**{.red} text
-      // {
-      //   "type": "strong_close",
-      //   "tag": "strong",
-      //   "attrs": null,
-      //   "map": null,
-      //   "nesting": -1,
-      //   "level": 0,
-      //   "children": null,
-      //   "content": "",
-      //   "markup": "**",
-      //   "info": "",
-      //   "meta": null,
-      //   "block": false,
-      //   "hidden": false
-      // },
-      // {
-      //   "type": "text",
-      //   "tag": "",
-      //   "attrs": null,
-      //   "map": null,
-      //   "nesting": 0,
-      //   "level": 0,
-      //   "children": null,
-      //   "content": "{.red} text",
-      //   "markup": "",
-      //   "info": "",
-      //   "meta": null,
-      //   "block": false,
-      //   "hidden": false
-      // }
-      for (var j=0, k=inlineTokens.length; j<k; ++j) {
-        // should be inline token of type text
-        if (!inlineTokens[j] || inlineTokens[j].type !== 'text') {
-          continue;
-        }
-        // token before should not be opening
-        if (!inlineTokens[j - 1] || inlineTokens[j - 1].nesting === 1) {
-          continue;
-        }
-        // token should contain { in begining
-        if (inlineTokens[j].content[0] !== '{') {
-          continue;
-        }
-        // } should be found
-        var endChar = inlineTokens[j].content.indexOf('}');
-        if (endChar === -1) {
-          continue;
-        }
-        // which token to add attributes to
-        var attrToken = matchingOpeningToken(inlineTokens, j - 1);
-        if (!attrToken) {
-          continue;
-        }
-        var inlineAttrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
-        if (inlineAttrs.length !== 0) {
-          // remove {}
-          inlineTokens[j].content = inlineTokens[j].content.slice(endChar + 1);
-          // add attributes
-          attrToken.info = 'b';
-          utils.addAttrs(inlineAttrs, attrToken);
-        }
-      }
-
       // attributes for blocks
       var lastInlineToken;
-      if (hasCurly(tokens[i].content)) {
+      if (utils.hasCurlyInEnd(tokens[i].content)) {
         lastInlineToken = last(inlineTokens);
         var content = lastInlineToken.content;
         var curlyStart = content.lastIndexOf('{');
@@ -118,8 +66,8 @@ module.exports = function attributes(md) {
           utils.addAttrs(attrs, bulletListOpen(tokens, i - 1));
           // remove softbreak and {} inline tokens
           tokens[i].children = inlineTokens.slice(0, -2);
-          tokens[i].content = removeCurly(tokens[i].content);
-          if (hasCurly(tokens[i].content)) {
+          tokens[i].content = utils.removeCurly(tokens[i].content);
+          if (utils.hasCurlyInEnd(tokens[i].content)) {
             // do once more:
             //
             // - item {.a}
@@ -128,12 +76,12 @@ module.exports = function attributes(md) {
           }
         } else {
           utils.addAttrs(attrs, correspondingBlock);
-          lastInlineToken.content = removeCurly(content);
+          lastInlineToken.content = utils.removeCurly(content);
           if (lastInlineToken.content === '') {
             // remove empty inline token
             inlineTokens.pop();
           }
-          tokens[i].content = removeCurly(tokens[i].content);
+          tokens[i].content = utils.removeCurly(tokens[i].content);
         }
       }
 
@@ -141,27 +89,6 @@ module.exports = function attributes(md) {
   }
   md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
 };
-
-/**
- * test if string has proper formated curly
- */
-function hasCurly(str) {
-  // we need minimum four chars, example {.b}
-  if (!str || !str.length || str.length < 4) {
-    return false;
-  }
-
-  // should end in }
-  if (str.charAt(str.length - 1) !== '}') {
-    return false;
-  }
-
-  // should start with {
-  if (str.indexOf('{') === -1) {
-    return false;
-  }
-  return true;
-}
 
 /**
  * some blocks are hidden (not rendered)
@@ -198,31 +125,54 @@ function bulletListOpen(tokens, i) {
 }
 
 /**
- * find corresponding opening block
+ * Returns first pattern that matches `token`-stream
+ * at current `i`.
+ *
+ * @param {array} tokens
+ * @param {number} i
+ * @param {string} type - pattern type
  */
-function matchingOpeningToken(tokens, i) {
-  if (tokens[i].type === 'softbreak') {
-    return false;
-  }
-  // non closing blocks, example img
-  if (tokens[i].nesting === 0) {
-    return tokens[i];
-  }
-  var type = tokens[i].type.replace('_close', '_open');
-  for (; i >= 0; --i) {
-    if (tokens[i].type === type) {
-      return tokens[i];
+function getMatchingPattern (tokens, i, type) {
+  type = type || 'block';
+  for (let pattern of patterns.filter(p => p.type === type)) {
+    let match = pattern.tests.every((test) => {
+      let j = i + test.shift;
+      let token = tokens[j];
+
+      if (token === undefined) { return false; }
+
+      for (let key in test) {
+        if (key === 'shift') { continue; }
+
+
+        if (token[key] === undefined) { return false; }
+        switch (typeof test[key]) {
+        case 'boolean':
+        case 'number':
+        case 'string':
+          if (token[key] !== test[key]) { return false; }
+          break;
+        case 'function':
+          if (!test[key](token[key])) { return false; }
+          break;
+        case 'object':
+          if (Array.isArray(test[key])) {
+            let res = test[key].every(t => t(token[key]));
+            if (res === false) { return false; }
+            break;
+          }
+          // fall through for objects that are not arrays
+        default:
+          throw new Error('Unknown type of pattern test. Test should be of type boolean, number, string, function or array of functions.');
+        }
+      }
+      return true;
+    });
+    if (match) {
+      return pattern;
     }
   }
-}
-/**
- * Removes last curly from string.
- */
-function removeCurly(str) {
-  var curly = /[ \n]?{[^{}}]+}$/;
-  var pos = str.search(curly);
-
-  return pos !== -1 ? str.slice(0, pos) : str;
+  return false;
 }
 
 function last(arr) {

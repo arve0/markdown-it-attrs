@@ -10,7 +10,7 @@ module.exports = function attributes(md) {
     var l = tokens.length;
     for (var i = 0; i < l; ++i) {
       // fenced code blocks
-      if (tokens[i].block && tokens[i].info && hasCurly(tokens[i].info)) {
+      if (tokens[i].block && tokens[i].info && hasCurlyInEnd(tokens[i].info)) {
         var codeCurlyStart = tokens[i].info.indexOf('{');
         var codeCurlyEnd = tokens[i].info.length - 1;
         var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
@@ -96,7 +96,7 @@ module.exports = function attributes(md) {
 
       // attributes for blocks
       var lastInlineToken;
-      if (hasCurly(tokens[i].content)) {
+      if (hasCurlyInEnd(tokens[i].content)) {
         lastInlineToken = last(inlineTokens);
         var content = lastInlineToken.content;
         var curlyStart = content.lastIndexOf('{');
@@ -120,7 +120,7 @@ module.exports = function attributes(md) {
           // remove softbreak and {} inline tokens
           tokens[i].children = inlineTokens.slice(0, -2);
           tokens[i].content = removeCurly(tokens[i].content);
-          if (hasCurly(tokens[i].content)) {
+          if (hasCurlyInEnd(tokens[i].content)) {
             // do once more:
             //
             // - item {.a}
@@ -146,7 +146,7 @@ module.exports = function attributes(md) {
 /**
  * test if string has proper formated curly
  */
-function hasCurly(str) {
+function hasCurlyInEnd(str) {
   // we need minimum four chars, example {.b}
   if (!str || !str.length || str.length < 4) {
     return false;

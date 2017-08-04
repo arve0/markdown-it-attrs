@@ -41,7 +41,7 @@
   "dependencies": {},
   "devDependencies": {
     "browserify": "^13.1.0",
-    "eslint": "^3.7.1",
+    "eslint": "^4.3.0",
     "markdown-it": ">=7.0.1",
     "mocha": "*"
   },

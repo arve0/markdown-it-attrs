@@ -94,9 +94,9 @@ describe('markdown-it-attrs', () => {
     src += '  {.c}\n';
     src += '    1. nested nested item {.d}\n';
     src += '    {.e}\n';
-// Adding class to top ul not supported
-//    src += '{.f}';
-//    expected = '<ul class="f">\n';
+    // Adding class to top ul not supported
+    //    src += '{.f}';
+    //    expected = '<ul class="f">\n';
     expected = '<ul>\n';
     expected += '<li class="a">item 1\n';
     expected += '<ul class="c">\n';
@@ -179,4 +179,11 @@ describe('markdown-it-attrs', () => {
     expected = '<pre><code class="c language-python" a="1" id="ii">for i in range(10):\n</code></pre>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support blockquotes', () => {
+    src = '> quote\n{.c}';
+    expected = '<blockquote class="c">\n<p>quote</p>\n</blockquote>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
+
