@@ -1,3 +1,4 @@
+'use strict';
 /**
  * If a pattern matches the token stream,
  * then run transform.
