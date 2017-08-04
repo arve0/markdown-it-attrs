@@ -7,9 +7,8 @@ module.exports = function attributes(md) {
 
   function curlyAttrs(state){
     var tokens = state.tokens;
-    var l = tokens.length;
 
-    for (var i = 0; i < l; ++i) {
+    for (var i = 0; i < tokens.length; ++i) {
       let token = tokens[i];
       let pattern;
       if (token.block) {
