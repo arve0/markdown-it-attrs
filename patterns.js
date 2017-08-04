@@ -163,6 +163,22 @@ module.exports = [
       }
 
     }
+  }, {
+    /**
+     * [span]{.c}
+     */
+    name: 'span syntax',
+    type: 'block',
+    tests: [
+      {
+        shift: 0,
+        type: 'inline',
+        content: (str) => str.match(/\[[^\]+]\{[^}]+\}\]/)
+      }
+    ],
+    transform: (tokens, i) => {
+      // TODO
+    }
   }
 ];
 

@@ -207,5 +207,11 @@ describe('markdown-it-attrs', () => {
     expected += '</table>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support [spans]{.c}', () => {
+    src = '[span with *emph*]{.c}';
+    expected = '<p><span class="c">span with <em>emph</em></span></p>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
