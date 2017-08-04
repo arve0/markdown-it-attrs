@@ -8,7 +8,7 @@
  */
 exports.getAttrs = function(str, start, end) {
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
-  var allowedKeyChars = /[^\t\n\f \/>"'=]/;
+  var allowedKeyChars = /[^\t\n\f />"'=]/;
   var pairSeparator = ' ';
   var keySeparator = '=';
   var classChar = '.';
@@ -99,6 +99,83 @@ exports.addAttrs = function(attrs, token) {
   }
   return token;
 };
+
+/**
+ * proper formated curly in *end* of string
+ */
+exports.hasCurlyInEnd = function (str) {
+  // we need minimum four chars, example {.b}
+  if (!str || typeof str !== 'string' || str.length < 4) {
+    return false;
+  }
+
+  // should end in }
+  if (str.charAt(str.length - 1) !== '}') {
+    return false;
+  }
+
+  // should start with {
+  if (str.indexOf('{') === -1) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * proper formated curly in *start* of string
+ */
+exports.hasCurlyInStart = function (str) {
+  // we need minimum four chars, example {.b}
+  if (!str || typeof str !== 'string' || str.length < 4) {
+    return false;
+  }
+
+  // should start in {
+  if (str.charAt(0) !== '{') {
+    return false;
+  }
+
+  // should start with {
+  if (str.indexOf('}') < 3) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Removes last curly from string.
+ */
+exports.removeCurly = function (str) {
+  var curly = /[ \n]?{[^{}}]+}$/;
+  var pos = str.search(curly);
+
+  return pos !== -1 ? str.slice(0, pos) : str;
+};
+
+/**
+ * find corresponding opening block
+ */
+exports.matchingOpeningToken = function (tokens, i) {
+  if (tokens[i].type === 'softbreak') {
+    return false;
+  }
+  // non closing blocks, example img
+  if (tokens[i].nesting === 0) {
+    return tokens[i];
+  }
+  var type = tokens[i].type.replace('_close', '_open');
+  for (; i >= 0; --i) {
+    if (tokens[i].type === type) {
+      return tokens[i];
+    }
+  }
+};
+
+
+
+
 
 /**
  * from https://github.com/markdown-it/markdown-it/blob/master/lib/common/utils.js

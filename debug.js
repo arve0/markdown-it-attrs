@@ -4,7 +4,7 @@ var markdownItAttrs = require('./');
 
 md.use(markdownItAttrs).use(require('../markdown-it-implicit-figures'));
 
-var src = `[![Image](fig.png)](page.html){target="_blank"}`;  // eslint-disable-line
+var src = '> quote\n{.c}';
 
 var res = md.render(src);
 
