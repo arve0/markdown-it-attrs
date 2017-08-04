@@ -123,6 +123,46 @@ module.exports = [
         utils.addAttrs(inlineAttrs, attrToken);
       }
     }
+  }, {
+    /**
+     * | h1 |
+     * | -- |
+     * | c1 |
+     * {.c}
+     */
+    name: 'tables',
+    type: 'block',
+    tests: [
+      {
+        // let this token be i, such that for loop continues at
+        // next token after tokens.splice
+        shift: 0,
+        type: 'table_close'
+      }, {
+        shift: 1,
+        type: 'paragraph_open'
+      }, {
+        shift: 2,
+        type: 'inline',
+        children: [
+          (arr) => arr && arr.length === 1,
+          (arr) => utils.hasCurlyInStart(arr[0].content)
+        ]
+      }
+    ],
+    transform: (tokens, i) => {
+      let token = tokens[i + 2];
+      var tableOpen = utils.matchingOpeningToken(tokens, i);
+      if (!tableOpen) { return; }
+      var inlineAttrs = utils.getAttrs(token.content, 1, token.content.length - 1);
+      if (inlineAttrs.length !== 0) {
+        // remove <p>{.c}</p>
+        tokens.splice(i + 1, 3);
+        // add attributes
+        utils.addAttrs(inlineAttrs, tableOpen);
+      }
+
+    }
   }
 ];
 

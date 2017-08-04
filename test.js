@@ -185,5 +185,27 @@ describe('markdown-it-attrs', () => {
     expected = '<blockquote class="c">\n<p>quote</p>\n</blockquote>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support tables', () => {
+    src = '| h1 | h2 |\n';
+    src += '| -- | -- |\n';
+    src += '| c1 | c1 |\n';
+    src += '{.c}';
+    expected = '<table class="c">\n';
+    expected += '<thead>\n';
+    expected += '<tr>\n';
+    expected += '<th>h1</th>\n';
+    expected += '<th>h2</th>\n';
+    expected += '</tr>\n';
+    expected += '</thead>\n';
+    expected += '<tbody>\n';
+    expected += '<tr>\n';
+    expected += '<td>c1</td>\n';
+    expected += '<td>c1</td>\n';
+    expected += '</tr>\n';
+    expected += '</tbody>\n';
+    expected += '</table>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
