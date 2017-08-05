@@ -207,5 +207,20 @@ describe('markdown-it-attrs', () => {
     expected += '</table>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support nested lists', () => {
+    src = '- item\n';
+    src += '  - nested';
+    src += '  {.red}';
+    src += '{.blue}';
+    expected = '<ul class="blue">\n';
+    expected += '<li>item\n';
+    expected += '<ul class="red">\n';
+    expected += '<li>nested</li>\n';
+    expected += '</ul>\n';
+    expected += '</li>\n';
+    expected += '</ul>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
