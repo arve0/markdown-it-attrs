@@ -1,265 +1,470 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownItAttrs = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var utils = require('./utils.js');
+const patterns = require('./patterns.js');
 
 module.exports = function attributes(md) {
 
-  function curlyAttrs(state){
-    var tokens = state.tokens;
-    var l = tokens.length;
-    for (var i = 0; i < l; ++i) {
-      // fenced code blocks
-      if (tokens[i].block && tokens[i].info && hasCurlyInEnd(tokens[i].info)) {
-        var codeCurlyStart = tokens[i].info.indexOf('{');
-        var codeCurlyEnd = tokens[i].info.length - 1;
-        var codeAttrs = utils.getAttrs(tokens[i].info, codeCurlyStart + 1, codeCurlyEnd);
-        utils.addAttrs(codeAttrs, tokens[i]);
-        tokens[i].info = removeCurly(tokens[i].info);
-        continue;
-      }
-      // block tokens contain markup
-      // inline tokens contain the text
-      if (tokens[i].type !== 'inline') {
-        continue;
-      }
+  function curlyAttrs(state) {
+    let tokens = state.tokens;
 
-      var inlineTokens = tokens[i].children;
-      if (!inlineTokens || inlineTokens.length <= 0) {
-        continue;
-      }
-
-      // attributes in inline tokens:
-      // inline **bold**{.red} text
-      // {
-      //   "type": "strong_close",
-      //   "tag": "strong",
-      //   "attrs": null,
-      //   "map": null,
-      //   "nesting": -1,
-      //   "level": 0,
-      //   "children": null,
-      //   "content": "",
-      //   "markup": "**",
-      //   "info": "",
-      //   "meta": null,
-      //   "block": false,
-      //   "hidden": false
-      // },
-      // {
-      //   "type": "text",
-      //   "tag": "",
-      //   "attrs": null,
-      //   "map": null,
-      //   "nesting": 0,
-      //   "level": 0,
-      //   "children": null,
-      //   "content": "{.red} text",
-      //   "markup": "",
-      //   "info": "",
-      //   "meta": null,
-      //   "block": false,
-      //   "hidden": false
-      // }
-      for (var j=0, k=inlineTokens.length; j<k; ++j) {
-        // should be inline token of type text
-        if (!inlineTokens[j] || inlineTokens[j].type !== 'text') {
-          continue;
-        }
-        // token before should not be opening
-        if (!inlineTokens[j - 1] || inlineTokens[j - 1].nesting === 1) {
-          continue;
-        }
-        // token should contain { in begining
-        if (inlineTokens[j].content[0] !== '{') {
-          continue;
-        }
-        // } should be found
-        var endChar = inlineTokens[j].content.indexOf('}');
-        if (endChar === -1) {
-          continue;
-        }
-        // which token to add attributes to
-        var attrToken = matchingOpeningToken(inlineTokens, j - 1);
-        if (!attrToken) {
-          continue;
-        }
-        var inlineAttrs = utils.getAttrs(inlineTokens[j].content, 1, endChar);
-        if (inlineAttrs.length !== 0) {
-          // remove {}
-          inlineTokens[j].content = inlineTokens[j].content.slice(endChar + 1);
-          // add attributes
-          attrToken.info = 'b';
-          utils.addAttrs(inlineAttrs, attrToken);
-        }
-      }
-
-      // attributes for blocks
-      var lastInlineToken;
-      if (hasCurlyInEnd(tokens[i].content)) {
-        lastInlineToken = last(inlineTokens);
-        var content = lastInlineToken.content;
-        var curlyStart = content.lastIndexOf('{');
-        var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
-        // if list and `\n{#c}` -> apply to bullet list open:
-        //
-        // - iii
-        // {#c}
-        //
-        // should give
-        //
-        // <ul id="c">
-        //   <li>iii</li>
-        // </ul>
-        var nextLastInline = nextLast(inlineTokens);
-        // some blocks are hidden, example li > paragraph_open
-        var correspondingBlock = firstTokenNotHidden(tokens, i - 1);
-        if (nextLastInline && nextLastInline.type === 'softbreak' &&
-            correspondingBlock && correspondingBlock.type === 'list_item_open') {
-          utils.addAttrs(attrs, bulletListOpen(tokens, i - 1));
-          // remove softbreak and {} inline tokens
-          tokens[i].children = inlineTokens.slice(0, -2);
-          tokens[i].content = removeCurly(tokens[i].content);
-          if (hasCurlyInEnd(tokens[i].content)) {
-            // do once more:
-            //
-            // - item {.a}
-            // {.b} <-- applied this
-            i -= 1;
+    for (let i = 0; i < tokens.length; i++) {
+      for (let p = 0; p < patterns.length; p++) {
+        let pattern = patterns[p];
+        let j = null; // position of child with offset 0
+        let match = pattern.tests.every(t => {
+          let res = test(tokens, i, t);
+          if (res.j !== null) { j = res.j; }
+          return res.match;
+        });
+        if (match) {
+          pattern.transform(tokens, i, j);
+          if (pattern.name === 'inline attributes') {
+            // retry, may be several inline attributes
+            p--;
           }
-        } else {
-          utils.addAttrs(attrs, correspondingBlock);
-          lastInlineToken.content = removeCurly(content);
-          if (lastInlineToken.content === '') {
-            // remove empty inline token
-            inlineTokens.pop();
-          }
-          tokens[i].content = removeCurly(tokens[i].content);
         }
       }
-
     }
   }
+
   md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
 };
 
 /**
- * test if string has proper formated curly
+ * Test if t matches token stream.
+ *
+ * @param {array} tokens
+ * @param {number} i
+ * @param {object} t Test to match.
+ * @return {object} { match: true|false, j: null|number }
  */
-function hasCurlyInEnd(str) {
-  // we need minimum four chars, example {.b}
-  if (!str || !str.length || str.length < 4) {
-    return false;
-  }
+function test(tokens, i, t) {
+  let res = {
+    match: false,
+    j: null  // position of child
+  };
 
-  // should end in }
-  if (str.charAt(str.length - 1) !== '}') {
-    return false;
-  }
+  let ii = t.shift !== undefined
+    ? i + t.shift
+    : t.position;
+  let token = get(tokens, ii);  // supports negative ii
 
-  // should start with {
-  if (str.indexOf('{') === -1) {
-    return false;
-  }
-  return true;
-}
 
-/**
- * some blocks are hidden (not rendered)
- */
-function firstTokenNotHidden(tokens, i) {
-  if (tokens[i] && tokens[i].hidden) {
-    return firstTokenNotHidden(tokens, i - 1);
-  }
-  return tokens[i];
-}
+  if (token === undefined) { return res; }
 
-/**
- * Find corresponding bullet/ordered list open.
- */
-function bulletListOpen(tokens, i) {
-  var level = 0;
-  var token;
-  for (; i >= 0; i -= 1) {
-    token = tokens[i];
-    // jump past nested lists, level == 0 and open -> correct opening token
-    if (token.type === 'bullet_list_close' ||
-        token.type === 'ordered_list_close') {
-      level += 1;
-    }
-    if (token.type === 'bullet_list_open' ||
-        token.type === 'ordered_list_open') {
-      if (level === 0) {
-        return token;
-      } else {
-        level -= 1;
+  for (let key in t) {
+    if (key === 'shift' || key === 'position') { continue; }
+
+    if (token[key] === undefined) { return res; }
+
+    if (key === 'children' && isArrayOfObjects(t.children)) {
+      if (token.children.length === 0) {
+        return res;
       }
+      let match;
+      let childTests = t.children;
+      let children = token.children;
+      if (childTests.every(tt => tt.position !== undefined)) {
+        // positions instead of shifts, do not loop all children
+        match = childTests.every(tt => test(children, tt.position, tt).match);
+        if (match) {
+          // we may need position of child in transform
+          let j = last(childTests).position;
+          res.j = j >= 0 ? j : children.length + j;
+        }
+      } else {
+        for (let j = 0; j < children.length; j++) {
+          match = childTests.every(tt => test(children, j, tt).match);
+          if (match) {
+            res.j = j;
+            // all tests true, continue with next key of pattern t
+            break;
+          }
+        }
+      }
+
+      if (match === false) { return res; }
+
+      continue;
+    }
+
+    switch (typeof t[key]) {
+    case 'boolean':
+    case 'number':
+    case 'string':
+      if (token[key] !== t[key]) { return res; }
+      break;
+    case 'function':
+      if (!t[key](token[key])) { return res; }
+      break;
+    case 'object':
+      if (isArrayOfFunctions(t[key])) {
+        let r = t[key].every(tt => tt(token[key]));
+        if (r === false) { return res; }
+        break;
+      }
+    // fall through for objects !== arrays of functions
+    default:
+      throw new Error(`Unknown type of pattern test (key: ${key}). Test should be of type boolean, number, string, function or array of functions.`);
     }
   }
+
+  // no tests returned false -> all tests returns true
+  res.match = true;
+  return res;
+}
+
+function isArrayOfObjects(arr) {
+  return Array.isArray(arr) && arr.length && arr.every(i => typeof i === 'object');
+}
+
+function isArrayOfFunctions(arr) {
+  return Array.isArray(arr) && arr.length && arr.every(i => typeof i === 'function');
 }
 
 /**
- * find corresponding opening block
+ * Get n item of array. Supports negative n, where -1 is last
+ * element in array.
+ * @param {array} arr
+ * @param {number} n
  */
-function matchingOpeningToken(tokens, i) {
-  if (tokens[i].type === 'softbreak') {
-    return false;
-  }
-  // non closing blocks, example img
-  if (tokens[i].nesting === 0) {
-    return tokens[i];
-  }
-  var type = tokens[i].type.replace('_close', '_open');
-  for (; i >= 0; --i) {
-    if (tokens[i].type === type) {
-      return tokens[i];
+function get(arr, n) {
+  return n >= 0 ? arr[n] : arr[arr.length + n];
+}
+
+// get last element of array, safe - returns {} if not found
+function last(arr) {
+  return arr.slice(-1)[0] || {};
+}
+
+},{"./patterns.js":2}],2:[function(require,module,exports){
+'use strict';
+/**
+ * If a pattern matches the token stream,
+ * then run transform.
+ */
+
+const utils = require('./utils.js');
+
+module.exports = [
+  {
+    /**
+     * ```python {.cls}
+     * for i in range(10):
+     *     print(i)
+     * ```
+     */
+    name: 'fenced code blocks',
+    tests: [
+      {
+        shift: 0,
+        block: true,
+        info: utils.hasCurly('end')
+      }
+    ],
+    transform: (tokens, i) => {
+      let token = tokens[i];
+      let start = token.info.lastIndexOf('{');
+      let attrs = utils.getAttrs(token.info, start);
+      utils.addAttrs(attrs, token);
+      token.info = utils.removeCurly(token.info);
+    }
+  }, {
+    /**
+     * bla `click()`{.c}
+     */
+    name: 'code inline',
+    tests: [
+      {
+        shift: 0,
+        type: 'inline',
+        children: [
+          {
+            shift: -1,
+            type: 'code_inline'  // does not have nesting: -1
+          }, {
+            shift: 0,
+            type: 'text',
+            content: utils.hasCurly('start')
+          }
+        ]
+      }
+    ],
+    transform: (tokens, i, j) => {
+      let token = tokens[i].children[j];
+      let endChar = token.content.indexOf('}');
+      var attrToken = tokens[i].children[j - 1];
+      var attrs = utils.getAttrs(token.content, 0);
+      utils.addAttrs(attrs, attrToken);
+      token.content = token.content.slice(endChar + 1);
+    }
+  }, {
+    /**
+     * | h1 |
+     * | -- |
+     * | c1 |
+     * {.c}
+     */
+    name: 'tables',
+    tests: [
+      {
+        // let this token be i, such that for-loop continues at
+        // next token after tokens.splice
+        shift: 0,
+        type: 'table_close'
+      }, {
+        shift: 1,
+        type: 'paragraph_open'
+      }, {
+        shift: 2,
+        type: 'inline',
+        content: utils.hasCurly('only')
+      }
+    ],
+    transform: (tokens, i) => {
+      let token = tokens[i + 2];
+      var tableOpen = utils.getMatchingOpeningToken(tokens, i);
+      var attrs = utils.getAttrs(token.content, 0);
+      // add attributes
+      utils.addAttrs(attrs, tableOpen);
+      // remove <p>{.c}</p>
+      tokens.splice(i + 1, 3);
+    }
+  }, {
+    /**
+     * *emphasis*{.with attrs=1}
+     */
+    name: 'inline attributes',
+    tests: [
+      {
+        shift: 0,
+        type: 'inline',
+        children: [
+          {
+            shift: -1,
+            nesting: -1  // closing inline tag, </em>{.a}
+          }, {
+            shift: 0,
+            type: 'text',
+            content: utils.hasCurly('start')
+          }
+        ]
+      }
+    ],
+    transform: (tokens, i, j) => {
+      let token = tokens[i].children[j];
+      let content = token.content;
+      let attrs = utils.getAttrs(content, 0);
+      var openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
+      utils.addAttrs(attrs, openingToken);
+      token.content = content.slice(content.indexOf('}') + 1);
+    }
+  }, {
+    /**
+     * - item
+     * {.a}
+     */
+    name: 'list softbreak',
+    tests: [
+      {
+        shift: -2,
+        type: 'list_item_open'
+      }, {
+        shift: 0,
+        type: 'inline',
+        children: [
+          {
+            position: -2,
+            type: 'softbreak'
+          }, {
+            position: -1,
+            content: utils.hasCurly('only')
+          }
+        ]
+      }
+    ],
+    transform: (tokens, i, j) => {
+      let token = tokens[i].children[j];
+      let content = token.content;
+      let attrs = utils.getAttrs(content, 0);
+      let ii = i - 2;
+      while (tokens[ii - 1] &&
+        tokens[ii - 1].type !== 'ordered_list_open' &&
+        tokens[ii - 1].type !== 'bullet_list_open') { ii--; }
+      utils.addAttrs(attrs, tokens[ii - 1]);
+      tokens[i].children = tokens[i].children.slice(0, -2);
+    }
+  }, {
+    /**
+     * - nested list
+     *   - with double \n
+     *   {.a} <-- apply to nested ul
+     *
+     * {.b} <-- apply to root <ul>
+     */
+    name: 'list double softbreak',
+    tests: [
+      {
+        // let this token be i = 0 so that we can erase
+        // the <p>{.a}</p> tokens below
+        shift: 0,
+        type: (str) =>
+          str === 'bullet_list_close' ||
+          str === 'ordered_list_close'
+      }, {
+        shift: 1,
+        type: 'paragraph_open'
+      }, {
+        shift: 2,
+        type: 'inline',
+        content: utils.hasCurly('only'),
+        children: (arr) => arr.length === 1
+      }, {
+        shift: 3,
+        type: 'paragraph_close'
+      }
+    ],
+    transform: (tokens, i) => {
+      let token = tokens[i + 2];
+      let content = token.content;
+      let attrs = utils.getAttrs(content, 0);
+      let openingToken = utils.getMatchingOpeningToken(tokens, i);
+      utils.addAttrs(attrs, openingToken);
+      tokens.splice(i + 1, 3);
+    }
+  }, {
+    /**
+     * - end of {.list-item}
+     */
+    name: 'list item end',
+    tests: [
+      {
+        shift: -2,
+        type: 'list_item_open'
+      }, {
+        shift: 0,
+        type: 'inline',
+        children: [
+          {
+            position: -1,
+            content: utils.hasCurly('end')
+          }
+        ]
+      }
+    ],
+    transform: (tokens, i, j) => {
+      let token = tokens[i].children[j];
+      let content = token.content;
+      let attrs = utils.getAttrs(content, content.lastIndexOf('{'));
+      utils.addAttrs(attrs, tokens[i - 2]);
+      let trimmed = content.slice(0, content.lastIndexOf('{'));
+      token.content = last(trimmed) !== ' ' ?
+        trimmed : trimmed.slice(0, -1);
+    }
+  }, {
+    /**
+     * something with softbreak
+     * {.cls}
+     */
+    name: '\n{.a} softbreak then curly in start',
+    tests: [
+      {
+        shift: 0,
+        type: 'inline',
+        children: [
+          {
+            position: -2,
+            type: 'softbreak'
+          }, {
+            position: -1,
+            type: 'text',
+            content: utils.hasCurly('only')
+          }
+        ]
+      }
+    ],
+    transform: (tokens, i, j) => {
+      let token = tokens[i].children[j];
+      let attrs = utils.getAttrs(token.content, 0);
+      // find last closing tag
+      let ii = i + 1;
+      while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
+      let openingToken = utils.getMatchingOpeningToken(tokens, ii);
+      utils.addAttrs(attrs, openingToken);
+      tokens[i].children = tokens[i].children.slice(0, -2);
+    }
+  }, {
+    /**
+     * end of {.block}
+     */
+    name: 'end of block',
+    tests: [
+      {
+        shift: 0,
+        type: 'inline',
+        children: [
+          {
+            position: -1,
+            content: utils.hasCurly('end')
+          }
+        ]
+      }
+    ],
+    transform: (tokens, i, j) => {
+      let token = tokens[i].children[j];
+      let content = token.content;
+      let attrs = utils.getAttrs(content, content.lastIndexOf('{'));
+      let ii = i + 1;
+      while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
+      let openingToken = utils.getMatchingOpeningToken(tokens, ii);
+      utils.addAttrs(attrs, openingToken);
+      let trimmed = content.slice(0, content.lastIndexOf('{'));
+      token.content = last(trimmed) !== ' ' ?
+        trimmed : trimmed.slice(0, -1);
     }
   }
-}
-/**
- * Removes last curly from string.
- */
-function removeCurly(str) {
-  var curly = /[ \n]?{[^{}}]+}$/;
-  var pos = str.search(curly);
+];
 
-  return pos !== -1 ? str.slice(0, pos) : str;
-}
-
+// get last element of array or string
 function last(arr) {
   return arr.slice(-1)[0];
 }
 
-function nextLast(arr) {
-  return arr.slice(-2, -1)[0];
-}
 
-},{"./utils.js":2}],2:[function(require,module,exports){
+},{"./utils.js":3}],3:[function(require,module,exports){
 'use strict';
 /**
  * parse {.class #id key=val} strings
  * @param {string} str: string to parse
- * @param {int} start: where to start parsing (not including {)
- * @param {int} end: where to stop parsing (not including })
+ * @param {int} start: where to start parsing (including {)
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
-exports.getAttrs = function(str, start, end) {
+exports.getAttrs = function (str, start, end) {
+  // TODO: do not require `end`, stop when } is found
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
-  var allowedKeyChars = /[^\t\n\f \/>"'=]/;
-  var pairSeparator = ' ';
-  var keySeparator = '=';
-  var classChar = '.';
-  var idChar = '#';
+  const allowedKeyChars = /[^\t\n\f />"'=]/;
+  const pairSeparator = ' ';
+  const keySeparator = '=';
+  const classChar = '.';
+  const idChar = '#';
+  const endChar = '}';
 
-  var attrs = [];
-  var key = '';
-  var value = '';
-  var parsingKey = true;
-  var valueInsideQuotes = false;
+  const attrs = [];
+  let key = '';
+  let value = '';
+  let parsingKey = true;
+  let valueInsideQuotes = false;
 
   // read inside {}
-  for (var i=start; i <= end; ++i) {
-    var char_ = str.charAt(i);
+  // start + 1 to avoid beginning {
+  // breaks when } is found or end of string
+  for (let i = start + 1; i < str.length; i++) {
+    let char_ = str.charAt(i);
+    if (char_ === endChar) {
+      if (key !== '') { attrs.push([key, value]); }
+      break;
+    }
 
     // switch to reading value if equal sign
     if (char_ === keySeparator) {
@@ -325,8 +530,8 @@ exports.getAttrs = function(str, start, end) {
  * @param {token} token: which token to add attributes
  * @returns token
  */
-exports.addAttrs = function(attrs, token) {
-  for (var j=0, l=attrs.length; j<l; ++j) {
+exports.addAttrs = function (attrs, token) {
+  for (var j = 0, l = attrs.length; j < l; ++j) {
     var key = attrs[j][0];
     if (key === 'class') {
       token.attrJoin('class', attrs[j][1]);
@@ -336,6 +541,99 @@ exports.addAttrs = function(attrs, token) {
   }
   return token;
 };
+
+/**
+ * Does string have properly formatted curly?
+ *
+ * start: '{.a} asdf'
+ * middle: 'a{.b}c'
+ * end: 'asdf {.a}'
+ * only: '{.a}'
+ *
+ * @param {string} where to expect {} curly. start, middle, end or only.
+ * @return {function(string)} Function which testes if string has curly.
+ */
+exports.hasCurly = function (where) {
+
+  if (!where) {
+    throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');
+  }
+
+  /**
+   * @param {string} str
+   * @return {boolean}
+   */
+  return function (str) {
+    // we need minimum four chars, example {.b}
+    if (!str || typeof str !== 'string' || str.length < 4) {
+      return false;
+    }
+
+    let start, end;
+    switch (where) {
+    case 'start':
+      // first char should be {, } found in char 3 or more
+      return str.charAt(0) === '{' &&
+          str.indexOf('}', 3) !== -1;
+
+    case 'middle':
+      // 'a{.b}'
+      start = str.indexOf('{', 1);
+      end = start !== -1 && str.indexOf('}', start + 3);
+      return start !== -1 && end !== -1;
+
+    case 'end':
+      // last char should be }
+      end = str.charAt(str.length - 1) === '}';
+      start = end && str.indexOf('{');
+      return end && (start + 3) < str.length;
+
+    case 'only':
+      // '{.a}'
+      return str.charAt(0) === '{' &&
+          // make sure first occurence is last occurence
+          str.indexOf('}', 3) === (str.length - 1);
+    }
+  };
+};
+
+/**
+ * Removes last curly from string.
+ */
+exports.removeCurly = function (str) {
+  var curly = /[ \n]?{[^{}}]+}$/;
+  var pos = str.search(curly);
+
+  return pos !== -1 ? str.slice(0, pos) : str;
+};
+
+/**
+ * find corresponding opening block
+ */
+exports.getMatchingOpeningToken = function (tokens, i) {
+  if (tokens[i].type === 'softbreak') {
+    return false;
+  }
+  // non closing blocks, example img
+  if (tokens[i].nesting === 0) {
+    return tokens[i];
+  }
+
+  // inline tokens changes level on same token
+  // that have .nesting +- 1
+  let level = tokens[i].block
+    ? tokens[i].level
+    : tokens[i].level + 1;  // adjust for inline tokens
+
+  let type = tokens[i].type.replace('_close', '_open');
+
+  for (; i >= 0; --i) {
+    if (tokens[i].type === type && tokens[i].level === level) {
+      return tokens[i];
+    }
+  }
+};
+
 
 /**
  * from https://github.com/markdown-it/markdown-it/blob/master/lib/common/utils.js
@@ -353,7 +651,7 @@ function replaceUnsafeChar(ch) {
   return HTML_REPLACEMENTS[ch];
 }
 
-exports.escapeHtml = function(str) {
+exports.escapeHtml = function (str) {
   if (HTML_ESCAPE_TEST_RE.test(str)) {
     return str.replace(HTML_ESCAPE_REPLACE_RE, replaceUnsafeChar);
   }
