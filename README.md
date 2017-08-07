@@ -110,7 +110,7 @@ Output:
 </ul>
 ```
 
-If you have nested lists, curlys after new lines will apply to the nearest `<ul>` or `<ol>` list. You may force it to apply to the outer `<ul>` by adding curly below on a paragraph by it own:
+If you have nested lists, curlys after new lines will apply to the nearest `<ul>` or `<ol>`. You may force it to apply to the outer `<ul>` by adding curly below on a paragraph by its own:
 ```md
 - item
   - nested item {.a}
