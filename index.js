@@ -1,183 +1,138 @@
 'use strict';
 
-const utils = require('./utils.js');
 const patterns = require('./patterns.js');
 
 module.exports = function attributes(md) {
 
-  function curlyAttrs(state){
-    var tokens = state.tokens;
+  function curlyAttrs(state) {
+    let tokens = state.tokens;
 
-    for (var i = 0; i < tokens.length; ++i) {
-      let token = tokens[i];
-      let pattern;
-      if (token.block) {
-        pattern = getMatchingPattern(tokens, i, 'block');
-        if (pattern) {
-          pattern.transform(tokens, i);
-          continue;
-        }
-        if (token.type === 'inline') {
-          let children = tokens[i].children;
-          for (let j = 0; j < children.length; ++j) {
-            pattern = getMatchingPattern(children, j, 'inline');
-            if (pattern) {
-              pattern.transform(children, j);
-              continue;
-            }
+    for (let i = 0; i < tokens.length; i++) {
+      for (let p = 0; p < patterns.length; p++) {
+        let pattern = patterns[p];
+        let j = null; // position of child with offset 0
+        let match = pattern.tests.every(t => {
+          let res = test(tokens, i, t);
+          if (res.j !== null) { j = res.j; }
+          return res.match;
+        });
+        if (match) {
+          pattern.transform(tokens, i, j);
+          if (pattern.name === 'inline attributes') {
+            // retry, may be several inline attributes
+            p--;
           }
         }
       }
-
-      // block tokens contain markup
-      // inline tokens contain the text
-      if (tokens[i].type !== 'inline') {
-        continue;
-      }
-
-      var inlineTokens = tokens[i].children;
-      if (!inlineTokens || inlineTokens.length <= 0) {
-        continue;
-      }
-
-      // attributes for blocks
-      var lastInlineToken;
-      if (utils.hasCurlyInEnd(tokens[i].content)) {
-        lastInlineToken = last(inlineTokens);
-        var content = lastInlineToken.content;
-        var curlyStart = content.lastIndexOf('{');
-        var attrs = utils.getAttrs(content, curlyStart + 1, content.length - 1);
-        // if list and `\n{#c}` -> apply to bullet list open:
-        //
-        // - iii
-        // {#c}
-        //
-        // should give
-        //
-        // <ul id="c">
-        //   <li>iii</li>
-        // </ul>
-        var nextLastInline = nextLast(inlineTokens);
-        // some blocks are hidden, example li > paragraph_open
-        var correspondingBlock = firstTokenNotHidden(tokens, i - 1);
-        if (nextLastInline && nextLastInline.type === 'softbreak' &&
-            correspondingBlock && correspondingBlock.type === 'list_item_open') {
-          utils.addAttrs(attrs, bulletListOpen(tokens, i - 1));
-          // remove softbreak and {} inline tokens
-          tokens[i].children = inlineTokens.slice(0, -2);
-          tokens[i].content = utils.removeCurly(tokens[i].content);
-          if (utils.hasCurlyInEnd(tokens[i].content)) {
-            // do once more:
-            //
-            // - item {.a}
-            // {.b} <-- applied this
-            i -= 1;
-          }
-        } else {
-          utils.addAttrs(attrs, correspondingBlock);
-          lastInlineToken.content = utils.removeCurly(content);
-          if (lastInlineToken.content === '') {
-            // remove empty inline token
-            inlineTokens.pop();
-          }
-          tokens[i].content = utils.removeCurly(tokens[i].content);
-        }
-      }
-
     }
   }
+
   md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
 };
 
 /**
- * some blocks are hidden (not rendered)
- */
-function firstTokenNotHidden(tokens, i) {
-  if (tokens[i] && tokens[i].hidden) {
-    return firstTokenNotHidden(tokens, i - 1);
-  }
-  return tokens[i];
-}
-
-/**
- * Find corresponding bullet/ordered list open.
- */
-function bulletListOpen(tokens, i) {
-  var level = 0;
-  var token;
-  for (; i >= 0; i -= 1) {
-    token = tokens[i];
-    // jump past nested lists, level == 0 and open -> correct opening token
-    if (token.type === 'bullet_list_close' ||
-        token.type === 'ordered_list_close') {
-      level += 1;
-    }
-    if (token.type === 'bullet_list_open' ||
-        token.type === 'ordered_list_open') {
-      if (level === 0) {
-        return token;
-      } else {
-        level -= 1;
-      }
-    }
-  }
-}
-
-/**
- * Returns first pattern that matches `token`-stream
- * at current `i`.
+ * Test if t matches token stream.
  *
  * @param {array} tokens
  * @param {number} i
- * @param {string} type - pattern type
+ * @param {object} t Test to match.
+ * @return {object} { match: true|false, j: null|number }
  */
-function getMatchingPattern (tokens, i, type) {
-  type = type || 'block';
-  for (let pattern of patterns.filter(p => p.type === type)) {
-    let match = pattern.tests.every((test) => {
-      let j = i + test.shift;
-      let token = tokens[j];
+function test(tokens, i, t) {
+  let res = {
+    match: false,
+    j: null  // position of child
+  };
 
-      if (token === undefined) { return false; }
+  let ii = t.shift !== undefined
+    ? i + t.shift
+    : t.position;
+  let token = get(tokens, ii);  // supports negative ii
 
-      for (let key in test) {
-        if (key === 'shift') { continue; }
 
+  if (token === undefined) { return res; }
 
-        if (token[key] === undefined) { return false; }
-        switch (typeof test[key]) {
-        case 'boolean':
-        case 'number':
-        case 'string':
-          if (token[key] !== test[key]) { return false; }
-          break;
-        case 'function':
-          if (!test[key](token[key])) { return false; }
-          break;
-        case 'object':
-          if (Array.isArray(test[key])) {
-            let res = test[key].every(t => t(token[key]));
-            if (res === false) { return false; }
+  for (let key in t) {
+    if (key === 'shift' || key === 'position') { continue; }
+
+    if (token[key] === undefined) { return res; }
+
+    if (key === 'children' && isArrayOfObjects(t.children)) {
+      if (token.children.length === 0) {
+        return res;
+      }
+      let match;
+      let childTests = t.children;
+      let children = token.children;
+      if (childTests.every(tt => tt.position !== undefined)) {
+        // positions instead of shifts, do not loop all children
+        match = childTests.every(tt => test(children, tt.position, tt).match);
+        if (match) {
+          // we may need position of child in transform
+          let j = last(childTests).position;
+          res.j = j >= 0 ? j : children.length + j;
+        }
+      } else {
+        for (let j = 0; j < children.length; j++) {
+          match = childTests.every(tt => test(children, j, tt).match);
+          if (match) {
+            res.j = j;
+            // all tests true, continue with next key of pattern t
             break;
           }
-          // fall through for objects that are not arrays
-        default:
-          throw new Error('Unknown type of pattern test. Test should be of type boolean, number, string, function or array of functions.');
         }
       }
-      return true;
-    });
-    if (match) {
-      return pattern;
+
+      if (match === false) { return res; }
+
+      continue;
+    }
+
+    switch (typeof t[key]) {
+    case 'boolean':
+    case 'number':
+    case 'string':
+      if (token[key] !== t[key]) { return res; }
+      break;
+    case 'function':
+      if (!t[key](token[key])) { return res; }
+      break;
+    case 'object':
+      if (isArrayOfFunctions(t[key])) {
+        let r = t[key].every(tt => tt(token[key]));
+        if (r === false) { return res; }
+        break;
+      }
+    // fall through for objects !== arrays of functions
+    default:
+      throw new Error(`Unknown type of pattern test (key: ${key}). Test should be of type boolean, number, string, function or array of functions.`);
     }
   }
-  return false;
+
+  // no tests returned false -> all tests returns true
+  res.match = true;
+  return res;
 }
 
+function isArrayOfObjects(arr) {
+  return Array.isArray(arr) && arr.length && arr.every(i => typeof i === 'object');
+}
+
+function isArrayOfFunctions(arr) {
+  return Array.isArray(arr) && arr.length && arr.every(i => typeof i === 'function');
+}
+
+/**
+ * Get n item of array. Supports negative n, where -1 is last
+ * element in array.
+ * @param {array} arr
+ * @param {number} n
+ */
+function get(arr, n) {
+  return n >= 0 ? arr[n] : arr[arr.length + n];
+}
+
+// get last element of array, safe - returns {} if not found
 function last(arr) {
-  return arr.slice(-1)[0];
-}
-
-function nextLast(arr) {
-  return arr.slice(-2, -1)[0];
+  return arr.slice(-1)[0] || {};
 }

@@ -2,27 +2,34 @@
 /**
  * parse {.class #id key=val} strings
  * @param {string} str: string to parse
- * @param {int} start: where to start parsing (not including {)
- * @param {int} end: where to stop parsing (not including })
+ * @param {int} start: where to start parsing (including {)
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
-exports.getAttrs = function(str, start, end) {
+exports.getAttrs = function (str, start, end) {
+  // TODO: do not require `end`, stop when } is found
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
-  var allowedKeyChars = /[^\t\n\f />"'=]/;
-  var pairSeparator = ' ';
-  var keySeparator = '=';
-  var classChar = '.';
-  var idChar = '#';
+  const allowedKeyChars = /[^\t\n\f />"'=]/;
+  const pairSeparator = ' ';
+  const keySeparator = '=';
+  const classChar = '.';
+  const idChar = '#';
+  const endChar = '}';
 
-  var attrs = [];
-  var key = '';
-  var value = '';
-  var parsingKey = true;
-  var valueInsideQuotes = false;
+  const attrs = [];
+  let key = '';
+  let value = '';
+  let parsingKey = true;
+  let valueInsideQuotes = false;
 
   // read inside {}
-  for (var i=start; i <= end; ++i) {
-    var char_ = str.charAt(i);
+  // start + 1 to avoid beginning {
+  // breaks when } is found or end of string
+  for (let i = start + 1; i < str.length; i++) {
+    let char_ = str.charAt(i);
+    if (char_ === endChar) {
+      if (key !== '') { attrs.push([key, value]); }
+      break;
+    }
 
     // switch to reading value if equal sign
     if (char_ === keySeparator) {
@@ -88,8 +95,8 @@ exports.getAttrs = function(str, start, end) {
  * @param {token} token: which token to add attributes
  * @returns token
  */
-exports.addAttrs = function(attrs, token) {
-  for (var j=0, l=attrs.length; j<l; ++j) {
+exports.addAttrs = function (attrs, token) {
+  for (var j = 0, l = attrs.length; j < l; ++j) {
     var key = attrs[j][0];
     if (key === 'class') {
       token.attrJoin('class', attrs[j][1]);
@@ -101,47 +108,58 @@ exports.addAttrs = function(attrs, token) {
 };
 
 /**
- * proper formated curly in *end* of string
+ * Does string have properly formatted curly?
+ *
+ * start: '{.a} asdf'
+ * middle: 'a{.b}c'
+ * end: 'asdf {.a}'
+ * only: '{.a}'
+ *
+ * @param {string} where to expect {} curly. start, middle, end or only.
+ * @return {function(string)} Function which testes if string has curly.
  */
-exports.hasCurlyInEnd = function (str) {
-  // we need minimum four chars, example {.b}
-  if (!str || typeof str !== 'string' || str.length < 4) {
-    return false;
+exports.hasCurly = function (where) {
+
+  if (!where) {
+    throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');
   }
 
-  // should end in }
-  if (str.charAt(str.length - 1) !== '}') {
-    return false;
-  }
+  /**
+   * @param {string} str
+   * @return {boolean}
+   */
+  return function (str) {
+    // we need minimum four chars, example {.b}
+    if (!str || typeof str !== 'string' || str.length < 4) {
+      return false;
+    }
 
-  // should start with {
-  if (str.indexOf('{') === -1) {
-    return false;
-  }
+    let start, end;
+    switch (where) {
+    case 'start':
+      // first char should be {, } found in char 3 or more
+      return str.charAt(0) === '{' &&
+          str.indexOf('}', 3) !== -1;
 
-  return true;
-};
+    case 'middle':
+      // 'a{.b}'
+      start = str.indexOf('{', 1);
+      end = start !== -1 && str.indexOf('}', start + 3);
+      return start !== -1 && end !== -1;
 
-/**
- * proper formated curly in *start* of string
- */
-exports.hasCurlyInStart = function (str) {
-  // we need minimum four chars, example {.b}
-  if (!str || typeof str !== 'string' || str.length < 4) {
-    return false;
-  }
+    case 'end':
+      // last char should be }
+      end = str.charAt(str.length - 1) === '}';
+      start = end && str.indexOf('{');
+      return end && (start + 3) < str.length;
 
-  // should start in {
-  if (str.charAt(0) !== '{') {
-    return false;
-  }
-
-  // should start with {
-  if (str.indexOf('}') < 3) {
-    return false;
-  }
-
-  return true;
+    case 'only':
+      // '{.a}'
+      return str.charAt(0) === '{' &&
+          // make sure first occurence is last occurence
+          str.indexOf('}', 3) === (str.length - 1);
+    }
+  };
 };
 
 /**
@@ -157,7 +175,7 @@ exports.removeCurly = function (str) {
 /**
  * find corresponding opening block
  */
-exports.matchingOpeningToken = function (tokens, i) {
+exports.getMatchingOpeningToken = function (tokens, i) {
   if (tokens[i].type === 'softbreak') {
     return false;
   }
@@ -165,16 +183,21 @@ exports.matchingOpeningToken = function (tokens, i) {
   if (tokens[i].nesting === 0) {
     return tokens[i];
   }
-  var type = tokens[i].type.replace('_close', '_open');
+
+  // inline tokens changes level on same token
+  // that have .nesting +- 1
+  let level = tokens[i].block
+    ? tokens[i].level
+    : tokens[i].level + 1;  // adjust for inline tokens
+
+  let type = tokens[i].type.replace('_close', '_open');
+
   for (; i >= 0; --i) {
-    if (tokens[i].type === type) {
+    if (tokens[i].type === type && tokens[i].level === level) {
       return tokens[i];
     }
   }
 };
-
-
-
 
 
 /**
@@ -193,7 +216,7 @@ function replaceUnsafeChar(ch) {
   return HTML_REPLACEMENTS[ch];
 }
 
-exports.escapeHtml = function(str) {
+exports.escapeHtml = function (str) {
   if (HTML_ESCAPE_TEST_RE.test(str)) {
     return str.replace(HTML_ESCAPE_REPLACE_RE, replaceUnsafeChar);
   }
