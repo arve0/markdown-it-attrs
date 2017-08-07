@@ -9,7 +9,7 @@ describe('markdown-it-attrs.utils', () => {
   it('should parse {.class #id key=val}', () => {
     var src = '{.red #head key=val}';
     var expected = [['class', 'red'], ['id', 'head'], ['key', 'val']];
-    var res = utils.getAttrs(src, 1, src.length-1);
+    var res = utils.getAttrs(src, 0);
     assert.deepEqual(res, expected);
   });
 });
@@ -28,7 +28,7 @@ describe('markdown-it-attrs', () => {
 
   it('should add attributes when {} in last line', () => {
     src = 'some text\n{with=attrs}';
-    expected = '<p with="attrs">some text\n</p>\n';
+    expected = '<p with="attrs">some text</p>\n';
     assert.equal(md.render(src), expected);
   });
 
@@ -89,7 +89,7 @@ describe('markdown-it-attrs', () => {
   });
 
   it('should add classes in nested lists', () => {
-    src = '- item 1{.a}\n';
+    src =  '- item 1{.a}\n';
     src += '  - nested item {.b}\n';
     src += '  {.c}\n';
     src += '    1. nested nested item {.d}\n';
@@ -209,10 +209,11 @@ describe('markdown-it-attrs', () => {
   });
 
   it('should support nested lists', () => {
-    src = '- item\n';
-    src += '  - nested';
-    src += '  {.red}';
-    src += '{.blue}';
+    src =  '- item\n';
+    src += '  - nested\n';
+    src += '  {.red}\n';
+    src += '\n';
+    src += '{.blue}\n';
     expected = '<ul class="blue">\n';
     expected += '<li>item\n';
     expected += '<ul class="red">\n';
