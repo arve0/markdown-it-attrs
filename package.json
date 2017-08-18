@@ -42,7 +42,6 @@
   "devDependencies": {
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-env": "^1.6.0",
-    "babel-preset-es2015": "^6.24.1",
     "babelify": "^7.3.0",
     "browserify": "^13.1.0",
     "eslint": "^4.3.0",
@@ -52,17 +51,5 @@
   "peerDependencies": {
     "markdown-it": ">=7.0.1"
   },
-  "tonicExampleFilename": "demo.js",
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
-      ]
-    ]
-  }
+  "tonicExampleFilename": "demo.js"
 }
