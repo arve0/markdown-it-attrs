@@ -53,8 +53,8 @@ module.exports = [
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let endChar = token.content.indexOf('}');
-      var attrToken = tokens[i].children[j - 1];
-      var attrs = utils.getAttrs(token.content, 0);
+      let attrToken = tokens[i].children[j - 1];
+      let attrs = utils.getAttrs(token.content, 0);
       utils.addAttrs(attrs, attrToken);
       token.content = token.content.slice(endChar + 1);
     }
@@ -83,8 +83,8 @@ module.exports = [
     ],
     transform: (tokens, i) => {
       let token = tokens[i + 2];
-      var tableOpen = utils.getMatchingOpeningToken(tokens, i);
-      var attrs = utils.getAttrs(token.content, 0);
+      let tableOpen = utils.getMatchingOpeningToken(tokens, i);
+      let attrs = utils.getAttrs(token.content, 0);
       // add attributes
       utils.addAttrs(attrs, tableOpen);
       // remove <p>{.c}</p>
@@ -115,7 +115,7 @@ module.exports = [
       let token = tokens[i].children[j];
       let content = token.content;
       let attrs = utils.getAttrs(content, 0);
-      var openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
+      let openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
       utils.addAttrs(attrs, openingToken);
       token.content = content.slice(content.indexOf('}') + 1);
     }

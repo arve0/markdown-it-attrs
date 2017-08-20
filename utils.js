@@ -96,8 +96,8 @@ exports.getAttrs = function (str, start, end) {
  * @returns token
  */
 exports.addAttrs = function (attrs, token) {
-  for (var j = 0, l = attrs.length; j < l; ++j) {
-    var key = attrs[j][0];
+  for (let j = 0, l = attrs.length; j < l; ++j) {
+    let key = attrs[j][0];
     if (key === 'class') {
       token.attrJoin('class', attrs[j][1]);
     } else {
@@ -166,8 +166,8 @@ exports.hasCurly = function (where) {
  * Removes last curly from string.
  */
 exports.removeCurly = function (str) {
-  var curly = /[ \n]?{[^{}}]+}$/;
-  var pos = str.search(curly);
+  let curly = /[ \n]?{[^{}}]+}$/;
+  let pos = str.search(curly);
 
   return pos !== -1 ? str.slice(0, pos) : str;
 };
@@ -203,9 +203,9 @@ exports.getMatchingOpeningToken = function (tokens, i) {
 /**
  * from https://github.com/markdown-it/markdown-it/blob/master/lib/common/utils.js
  */
-var HTML_ESCAPE_TEST_RE = /[&<>"]/;
-var HTML_ESCAPE_REPLACE_RE = /[&<>"]/g;
-var HTML_REPLACEMENTS = {
+let HTML_ESCAPE_TEST_RE = /[&<>"]/;
+let HTML_ESCAPE_REPLACE_RE = /[&<>"]/g;
+let HTML_REPLACEMENTS = {
   '&': '&amp;',
   '<': '&lt;',
   '>': '&gt;',
