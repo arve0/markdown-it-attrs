@@ -1,11 +1,11 @@
 /* eslint-env es6 */
-var md = require('markdown-it')();
-var markdownItAttrs = require('./');
+const md = require('markdown-it')();
+const markdownItAttrs = require('./');
 
 md.use(markdownItAttrs).use(require('../markdown-it-implicit-figures'));
 
-var src = '> quote\n{.c}';
+let src = '> quote\n{.c}';
 
-var res = md.render(src);
+let res = md.render(src);
 
 console.log(res);  // eslint-disable-line

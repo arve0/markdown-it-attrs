@@ -28,6 +28,7 @@
         "no-shadow": [
           "error",
           { "builtinGlobals": true }
-        ]
+        ],
+        "no-var": "error"
     }
 }

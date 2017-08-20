@@ -1,21 +1,21 @@
 /* eslint-env mocha, es6 */
 'use strict';
-var assert = require('assert');
-var Md = require('markdown-it');
-var markdownItAttrs = require('./');
-var utils = require('./utils.js');
+const assert = require('assert');
+const Md = require('markdown-it');
+const markdownItAttrs = require('./');
+const utils = require('./utils.js');
 
 describe('markdown-it-attrs.utils', () => {
   it('should parse {.class #id key=val}', () => {
-    var src = '{.red #head key=val}';
-    var expected = [['class', 'red'], ['id', 'head'], ['key', 'val']];
-    var res = utils.getAttrs(src, 0);
+    let src = '{.red #head key=val}';
+    let expected = [['class', 'red'], ['id', 'head'], ['key', 'val']];
+    let res = utils.getAttrs(src, 0);
     assert.deepEqual(res, expected);
   });
 });
 
 describe('markdown-it-attrs', () => {
-  var md, src, expected;
+  let md, src, expected;
   beforeEach(() => {
     md = Md().use(markdownItAttrs);
   });
@@ -164,7 +164,7 @@ describe('markdown-it-attrs', () => {
   it('should work with typography enabled', () => {
     src = 'text {key="val with spaces"}';
     expected = '<p key="val with spaces">text</p>\n';
-    var res = md.set({ typographer: true }).render(src);
+    let res = md.set({ typographer: true }).render(src);
     assert.equal(res, expected);
   });
 
