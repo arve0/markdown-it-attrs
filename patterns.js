@@ -31,9 +31,12 @@ module.exports = [
     }
   }, {
     /**
-     * bla `click()`{.c}
+     * bla `click()`{.c} ![](img.png){.d}
+     *
+     * differs from 'inline attributes' as it does
+     * not have a closing tag (nesting: -1)
      */
-    name: 'code inline',
+    name: 'inline nesting 0',
     tests: [
       {
         shift: 0,
@@ -41,7 +44,7 @@ module.exports = [
         children: [
           {
             shift: -1,
-            type: 'code_inline'  // does not have nesting: -1
+            type: (str) => str === 'image' || str === 'code_inline'
           }, {
             shift: 0,
             type: 'text',
