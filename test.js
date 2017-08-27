@@ -223,5 +223,11 @@ describe('markdown-it-attrs', () => {
     expected += '</ul>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support images', () => {
+    src =  '![alt](img.png){.a}';
+    expected = '<p><img src="img.png" alt="alt" class="a"></p>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
