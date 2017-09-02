@@ -68,6 +68,12 @@ describe('markdown-it-attrs', () => {
     assert.equal(md.render(src), expected);
   });
 
+  it('should add css-modules in same css-modules attribute {..c1 ..c2} -> css-module="c1 c2"', () => {
+    src = 'some text {..c1 ..c2}';
+    expected = '<p css-module="c1 c2">some text</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
   it('should add nested css-modules {..c1.c2} -> css-module="c1.c2"', () => {
     src = 'some text {..c1.c2}';
     expected = '<p css-module="c1.c2">some text</p>\n';

@@ -105,6 +105,8 @@ exports.addAttrs = function (attrs, token) {
     let key = attrs[j][0];
     if (key === 'class') {
       token.attrJoin('class', attrs[j][1]);
+    } else if (key === 'css-module') {
+      token.attrJoin('css-module', attrs[j][1]);
     } else {
       token.attrPush(attrs[j]);
     }
