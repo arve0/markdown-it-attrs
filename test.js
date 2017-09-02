@@ -6,9 +6,9 @@ const markdownItAttrs = require('./');
 const utils = require('./utils.js');
 
 describe('markdown-it-attrs.utils', () => {
-  it('should parse {.class #id key=val}', () => {
-    let src = '{.red #head key=val}';
-    let expected = [['class', 'red'], ['id', 'head'], ['key', 'val']];
+  it('should parse {.class ..css-module #id key=val}', () => {
+    let src = '{.red ..mod #head key=val}';
+    let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val']];
     let res = utils.getAttrs(src, 0);
     assert.deepEqual(res, expected);
   });
@@ -38,15 +38,21 @@ describe('markdown-it-attrs', () => {
     assert.equal(md.render(src), expected);
   });
 
+  it('should add css-modules with {..css-module} double dot notation', () => {
+    src = 'some text {..green}';
+    expected = '<p css-module="green">some text</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
   it('should add identifiers with {#id} hashtag notation', () => {
     src = 'some text {#section2}';
     expected = '<p id="section2">some text</p>\n';
     assert.equal(md.render(src), expected);
   });
 
-  it('should support classes, identifiers and attributes in same {}', () => {
-    src = 'some text {attr=lorem .class #id}';
-    expected = '<p attr="lorem" class="class" id="id">some text</p>\n';
+  it('should support classes, css-modules, identifiers and attributes in same {}', () => {
+    src = 'some text {attr=lorem .class ..css-module #id}';
+    expected = '<p attr="lorem" class="class" css-module="css-module" id="id">some text</p>\n';
     assert.equal(md.render(src), expected);
   });
 
@@ -59,6 +65,12 @@ describe('markdown-it-attrs', () => {
   it('should add classes in same class attribute {.c1 .c2} -> class="c1 c2"', () => {
     src = 'some text {.c1 .c2}';
     expected = '<p class="c1 c2">some text</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
+  it('should add nested css-modules {..c1.c2} -> css-module="c1.c2"', () => {
+    src = 'some text {..c1.c2}';
+    expected = '<p css-module="c1.c2">some text</p>\n';
     assert.equal(md.render(src), expected);
   });
 
