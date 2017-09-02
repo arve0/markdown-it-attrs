@@ -37,11 +37,16 @@ exports.getAttrs = function (str, start, end) {
       continue;
     }
 
-    // {.class}
-    if (char_ === classChar && key === '') {
-      key = 'class';
-      parsingKey = false;
-      continue;
+    // {.class} {..css-module}
+    if (char_ === classChar) {
+      if (key === '') {
+        key = 'class';
+        parsingKey = false;
+        continue;
+      } else if (key === 'class') {
+        key = 'css-module';
+        continue;
+      }
     }
 
     // {#id}
