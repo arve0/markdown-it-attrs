@@ -2,7 +2,8 @@
 'use strict';
 const assert = require('assert');
 const Md = require('markdown-it');
-const markdownItAttrs = require('./');
+const implicitFigures = require('markdown-it-implicit-figures');
+const attrs = require('./');
 const utils = require('./utils.js');
 
 describe('markdown-it-attrs.utils', () => {
@@ -17,7 +18,7 @@ describe('markdown-it-attrs.utils', () => {
 describe('markdown-it-attrs', () => {
   let md, src, expected;
   beforeEach(() => {
-    md = Md().use(markdownItAttrs);
+    md = Md().use(attrs);
   });
 
   it('should add attributes when {} in end of last inline', () => {
@@ -227,6 +228,13 @@ describe('markdown-it-attrs', () => {
   it('should support images', () => {
     src =  '![alt](img.png){.a}';
     expected = '<p><img src="img.png" alt="alt" class="a"></p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
+  it('should work with plugin implicit-figures', () => {
+    md = md.use(implicitFigures);
+    src =  '![alt](img.png){.a}';
+    expected = '<figure><img src="img.png" alt="alt" class="a"></figure>\n';
     assert.equal(md.render(src), expected);
   });
 });
