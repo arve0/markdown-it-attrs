@@ -59,7 +59,11 @@ module.exports = [
       let attrToken = tokens[i].children[j - 1];
       let attrs = utils.getAttrs(token.content, 0);
       utils.addAttrs(attrs, attrToken);
-      token.content = token.content.slice(endChar + 1);
+      if (token.content.length === (endChar + 1)) {
+        tokens[i].children.splice(j, 1);
+      } else {
+        token.content = token.content.slice(endChar + 1);
+      }
     }
   }, {
     /**
