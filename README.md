@@ -38,6 +38,18 @@ nums = [x for x in range(10)]
 </code></pre>
 ```
 
+You can use `..` as a short-hand for `css-module=`:
+
+```md
+Use the css-module green on this paragraph. {..green}
+```
+
+Output:
+```html
+<p css-module="gree">Use the css-module green on this paragraph.</p>
+```
+
+
 ## Security
 **NOTE!**
 

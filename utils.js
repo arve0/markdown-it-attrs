@@ -37,11 +37,16 @@ exports.getAttrs = function (str, start, end) {
       continue;
     }
 
-    // {.class}
-    if (char_ === classChar && key === '') {
-      key = 'class';
-      parsingKey = false;
-      continue;
+    // {.class} {..css-module}
+    if (char_ === classChar) {
+      if (key === '') {
+        key = 'class';
+        parsingKey = false;
+        continue;
+      } else if (key === 'class') {
+        key = 'css-module';
+        continue;
+      }
     }
 
     // {#id}
@@ -100,6 +105,8 @@ exports.addAttrs = function (attrs, token) {
     let key = attrs[j][0];
     if (key === 'class') {
       token.attrJoin('class', attrs[j][1]);
+    } else if (key === 'css-module') {
+      token.attrJoin('css-module', attrs[j][1]);
     } else {
       token.attrPush(attrs[j]);
     }
