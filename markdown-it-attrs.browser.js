@@ -23,7 +23,7 @@ module.exports = function attributes(md) {
         });
         if (match) {
           pattern.transform(tokens, i, j);
-          if (pattern.name === 'inline attributes') {
+          if (pattern.name === 'inline attributes' || pattern.name === 'inline nesting 0') {
             // retry, may be several inline attributes
             p--;
           }
@@ -461,7 +461,10 @@ module.exports = [{
     type: 'inline',
     children: [{
       position: -1,
-      content: utils.hasCurly('end')
+      content: utils.hasCurly('end'),
+      type: function type(t) {
+        return t !== 'code_inline';
+      }
     }]
   }],
   transform: function transform(tokens, i, j) {
