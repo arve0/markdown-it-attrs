@@ -255,5 +255,11 @@ describe('markdown-it-attrs', () => {
     expected = '<figure><img src="img.png" alt="alt" class="a"></figure>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should not apply inside `code{.red}`', () => {
+    src =  'paragraph `code{.red}`';
+    expected = '<p>paragraph <code>code{.red}</code></p>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 

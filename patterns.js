@@ -272,7 +272,8 @@ module.exports = [
         children: [
           {
             position: -1,
-            content: utils.hasCurly('end')
+            content: utils.hasCurly('end'),
+            type: (t) => t !== 'code_inline'
           }
         ]
       }
