@@ -18,7 +18,7 @@ module.exports = function attributes(md) {
         });
         if (match) {
           pattern.transform(tokens, i, j);
-          if (pattern.name === 'inline attributes') {
+          if (pattern.name === 'inline attributes' || pattern.name === 'inline nesting 0') {
             // retry, may be several inline attributes
             p--;
           }

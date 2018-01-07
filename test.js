@@ -261,5 +261,11 @@ describe('markdown-it-attrs', () => {
     expected = '<p>paragraph <code>code{.red}</code></p>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should work with multiple inline code blocks in same paragraph', () => {
+    src = 'bla `click()`{.c} blah `release()`{.cpp}';
+    expected = '<p>bla <code class="c">click()</code> blah <code class="cpp">release()</code></p>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
