@@ -267,5 +267,11 @@ describe('markdown-it-attrs', () => {
     expected = '<p>bla <code class="c">click()</code> blah <code class="cpp">release()</code></p>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should not remove {} curlies with length < 4', () => {
+    src = 'do not remove the curlies {1}{2}';
+    expected = '<p>do not remove the curlies {1}{2}</p>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
