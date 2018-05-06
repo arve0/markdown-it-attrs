@@ -157,7 +157,7 @@ exports.hasCurly = function (where) {
     case 'end':
       // last char should be }
       end = str.charAt(str.length - 1) === '}';
-      start = end && str.indexOf('{');
+      start = end && str.lastIndexOf('{');
       return end && (start + 3) < str.length;
 
     case 'only':
