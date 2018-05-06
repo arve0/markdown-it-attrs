@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownItAttrs = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownItAttrs = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -629,36 +629,47 @@ exports.hasCurly = function (where) {
    * @return {boolean}
    */
   return function (str) {
-    // we need minimum four chars, example {.b}
-    if (!str || typeof str !== 'string' || str.length < 4) {
+    // we need minimum three chars, for example {b}
+    var minCurlyLength = 3;
+    if (!str || typeof str !== 'string' || str.length < minCurlyLength) {
       return false;
+    }
+
+    function validCurlyLength(curly) {
+      var isClass = curly.charAt(1) === '.';
+      var isId = curly.charAt(1) === '#';
+      return isClass || isId ? curly.length >= minCurlyLength + 1 : curly.length >= minCurlyLength;
     }
 
     var start = void 0,
         end = void 0;
     switch (where) {
       case 'start':
-        // first char should be {, } found in char 3 or more
-        return str.charAt(0) === '{' && str.indexOf('}', 3) !== -1;
+        // first char should be {, } found in char 2 or more
+        start = str.charAt(0) === '{' ? 0 : -1;
+        end = start === -1 ? -1 : str.indexOf('}', start + minCurlyLength - 1);
+        break;
 
       case 'middle':
         // 'a{.b}'
         start = str.indexOf('{', 1);
-        end = start !== -1 && str.indexOf('}', start + 3);
-        return start !== -1 && end !== -1;
+        end = start === -1 ? -1 : str.indexOf('}', start + minCurlyLength - 1);
+        break;
 
       case 'end':
         // last char should be }
-        end = str.charAt(str.length - 1) === '}';
-        start = end && str.indexOf('{');
-        return end && start + 3 < str.length;
+        end = str.charAt(str.length - 1) === '}' ? str.length - 1 : -1;
+        start = end === -1 ? -1 : str.lastIndexOf('{');
+        break;
 
       case 'only':
         // '{.a}'
-        return str.charAt(0) === '{' &&
-        // make sure first occurence is last occurence
-        str.indexOf('}', 3) === str.length - 1;
+        start = str.charAt(0) === '{' ? 0 : -1;
+        end = str.charAt(str.length - 1) === '}' ? str.length - 1 : -1;
+        break;
     }
+
+    return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + 1));
   };
 };
 
