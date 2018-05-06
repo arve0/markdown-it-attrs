@@ -268,9 +268,21 @@ describe('markdown-it-attrs', () => {
     assert.equal(md.render(src), expected);
   });
 
-  it('should not remove {} curlies with length < 4', () => {
-    src = 'do not remove the curlies {1}{2}';
-    expected = '<p>do not remove the curlies {1}{2}</p>\n';
+  it('should support {} curlies with length == 3', () => {
+    src = 'text {1}';
+    expected = '<p 1="">text</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
+  it('should do nothing with empty classname {.}', () => {
+    src = 'text {.}';
+    expected = '<p>text {.}</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
+  it('should do nothing with empty id {#}', () => {
+    src = 'text {#}';
+    expected = '<p>text {#}</p>\n';
     assert.equal(md.render(src), expected);
   });
 });
