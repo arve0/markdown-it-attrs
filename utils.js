@@ -136,36 +136,48 @@ exports.hasCurly = function (where) {
    * @return {boolean}
    */
   return function (str) {
-    // we need minimum four chars, example {.b}
-    if (!str || typeof str !== 'string' || str.length < 4) {
+    // we need minimum three chars, for example {b}
+    let minCurlyLength = 3;
+    if (!str || typeof str !== 'string' || str.length < minCurlyLength) {
       return false;
+    }
+
+    function validCurlyLength(curly) {
+      let isClass = curly.charAt(1) === '.';
+      let isId = curly.charAt(1) === '#';
+      return (isClass || isId)
+        ? curly.length >= (minCurlyLength + 1)
+        : curly.length >= minCurlyLength;
     }
 
     let start, end;
     switch (where) {
     case 'start':
-      // first char should be {, } found in char 3 or more
-      return str.charAt(0) === '{' &&
-          str.indexOf('}', 3) !== -1;
+      // first char should be {, } found in char 2 or more
+      start = str.charAt(0) === '{' ? 0 : -1;
+      end = start === -1 ? -1 : str.indexOf('}', start + minCurlyLength - 1);
+      break;
 
     case 'middle':
       // 'a{.b}'
       start = str.indexOf('{', 1);
-      end = start !== -1 && str.indexOf('}', start + 3);
-      return start !== -1 && end !== -1;
+      end = start === -1 ? -1 : str.indexOf('}', start + minCurlyLength - 1);
+      break;
 
     case 'end':
       // last char should be }
-      end = str.charAt(str.length - 1) === '}';
-      start = end && str.lastIndexOf('{');
-      return end && (start + 3) < str.length;
+      end = str.charAt(str.length - 1) === '}' ? str.length - 1 : -1;
+      start = end === -1 ? -1 : str.lastIndexOf('{');
+      break;
 
     case 'only':
       // '{.a}'
-      return str.charAt(0) === '{' &&
-          // make sure first occurence is last occurence
-          str.indexOf('}', 3) === (str.length - 1);
+      start = str.charAt(0) === '{' ? 0 : -1;
+      end = str.charAt(str.length - 1) === '}' ? str.length - 1 : -1;
+      break;
     }
+
+    return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + 1));
   };
 };
 
