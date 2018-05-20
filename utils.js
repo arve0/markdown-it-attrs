@@ -124,7 +124,7 @@ exports.addAttrs = function (attrs, token) {
  * @param {string} where to expect {} curly. start, middle, end or only.
  * @return {function(string)} Function which testes if string has curly.
  */
-exports.hasDelimiter = function (where, options) {
+exports.hasDelimiters = function (where, options) {
 
   if (!where) {
     throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');

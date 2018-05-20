@@ -19,7 +19,7 @@ module.exports = options => ([
       {
         shift: 0,
         block: true,
-        info: utils.hasDelimiter('end', options)
+        info: utils.hasDelimiters('end', options)
       }
     ],
     transform: (tokens, i) => {
@@ -48,7 +48,7 @@ module.exports = options => ([
           }, {
             shift: 0,
             type: 'text',
-            content: utils.hasDelimiter('start', options)
+            content: utils.hasDelimiters('start', options)
           }
         ]
       }
@@ -85,7 +85,7 @@ module.exports = options => ([
       }, {
         shift: 2,
         type: 'inline',
-        content: utils.hasDelimiter('only', options)
+        content: utils.hasDelimiters('only', options)
       }
     ],
     transform: (tokens, i) => {
@@ -113,7 +113,7 @@ module.exports = options => ([
           }, {
             shift: 0,
             type: 'text',
-            content: utils.hasDelimiter('start', options)
+            content: utils.hasDelimiters('start', options)
           }
         ]
       }
@@ -145,7 +145,7 @@ module.exports = options => ([
             type: 'softbreak'
           }, {
             position: -1,
-            content: utils.hasDelimiter('only', options)
+            content: utils.hasDelimiters('only', options)
           }
         ]
       }
@@ -184,7 +184,7 @@ module.exports = options => ([
       }, {
         shift: 2,
         type: 'inline',
-        content: utils.hasDelimiter('only', options),
+        content: utils.hasDelimiters('only', options),
         children: (arr) => arr.length === 1
       }, {
         shift: 3,
@@ -214,7 +214,7 @@ module.exports = options => ([
         children: [
           {
             position: -1,
-            content: utils.hasDelimiter('end', options)
+            content: utils.hasDelimiters('end', options)
           }
         ]
       }
@@ -245,7 +245,7 @@ module.exports = options => ([
           }, {
             position: -1,
             type: 'text',
-            content: utils.hasDelimiter('only', options)
+            content: utils.hasDelimiters('only', options)
           }
         ]
       }
@@ -272,7 +272,7 @@ module.exports = options => ([
         children: [
           {
             position: -1,
-            content: utils.hasDelimiter('end', options),
+            content: utils.hasDelimiters('end', options),
             type: (t) => t !== 'code_inline'
           }
         ]
