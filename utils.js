@@ -181,10 +181,6 @@ exports.hasDelimiter = function (where, options) {
   };
 };
 
-function escapeRegExp(s) {
-  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
 /**
  * Removes last curly from string.
  */
@@ -193,12 +189,23 @@ exports.removeDelimiter = function (str, options) {
   const end = escapeRegExp(options.rightDelimiter);
 
   let curly = new RegExp(
-    '[ \\n]?' + start + '[^' + start + end + end + ']+' + end + '$'
+    '[ \\n]?' + start + '[^' + start + end + ']+' + end + '$'
   );
   let pos = str.search(curly);
 
   return pos !== -1 ? str.slice(0, pos) : str;
 };
+
+/**
+ * Escapes special characters in string s such that the string
+ * can be used in `new RegExp`. For example "[" becomes "\\[".
+ *
+ * @param {string} s Regex string.
+ * @return {string} Escaped string.
+ */
+function escapeRegExp (s) {
+  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
 
 /**
  * find corresponding opening block
