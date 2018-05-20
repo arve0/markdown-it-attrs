@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownItAttrs = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownItAttrs = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -10,8 +10,10 @@ var defaultOptions = {
   rightDelimiter: '}'
 };
 
-module.exports = function attributes(md) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultOptions;
+module.exports = function attributes(md, options) {
+  if (!options) {
+    options = defaultOptions;
+  }
 
   var patterns = patternsConfig(options);
 
@@ -239,12 +241,12 @@ module.exports = function (options) {
     tests: [{
       shift: 0,
       block: true,
-      info: utils.hasDelimiter('end', options)
+      info: utils.hasDelimiters('end', options)
     }],
     transform: function transform(tokens, i) {
       var token = tokens[i];
       var start = token.info.lastIndexOf(options.leftDelimiter);
-      var attrs = utils.getAttrs(token.info, start, null, options);
+      var attrs = utils.getAttrs(token.info, start, options);
       utils.addAttrs(attrs, token);
       token.info = utils.removeDelimiter(token.info, options);
     }
@@ -267,14 +269,14 @@ module.exports = function (options) {
       }, {
         shift: 0,
         type: 'text',
-        content: utils.hasDelimiter('start', options)
+        content: utils.hasDelimiters('start', options)
       }]
     }],
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
       var endChar = token.content.indexOf(options.rightDelimiter);
       var attrToken = tokens[i].children[j - 1];
-      var attrs = utils.getAttrs(token.content, 0, null, options);
+      var attrs = utils.getAttrs(token.content, 0, options);
       utils.addAttrs(attrs, attrToken);
       if (token.content.length === endChar + 1) {
         tokens[i].children.splice(j, 1);
@@ -301,12 +303,12 @@ module.exports = function (options) {
     }, {
       shift: 2,
       type: 'inline',
-      content: utils.hasDelimiter('only', options)
+      content: utils.hasDelimiters('only', options)
     }],
     transform: function transform(tokens, i) {
       var token = tokens[i + 2];
       var tableOpen = utils.getMatchingOpeningToken(tokens, i);
-      var attrs = utils.getAttrs(token.content, 0, null, options);
+      var attrs = utils.getAttrs(token.content, 0, options);
       // add attributes
       utils.addAttrs(attrs, tableOpen);
       // remove <p>{.c}</p>
@@ -326,13 +328,13 @@ module.exports = function (options) {
       }, {
         shift: 0,
         type: 'text',
-        content: utils.hasDelimiter('start', options)
+        content: utils.hasDelimiters('start', options)
       }]
     }],
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
       var content = token.content;
-      var attrs = utils.getAttrs(content, 0, null, options);
+      var attrs = utils.getAttrs(content, 0, options);
       var openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
       utils.addAttrs(attrs, openingToken);
       token.content = content.slice(content.indexOf(options.rightDelimiter) + 1);
@@ -354,13 +356,13 @@ module.exports = function (options) {
         type: 'softbreak'
       }, {
         position: -1,
-        content: utils.hasDelimiter('only', options)
+        content: utils.hasDelimiters('only', options)
       }]
     }],
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
       var content = token.content;
-      var attrs = utils.getAttrs(content, 0, null, options);
+      var attrs = utils.getAttrs(content, 0, options);
       var ii = i - 2;
       while (tokens[ii - 1] && tokens[ii - 1].type !== 'ordered_list_open' && tokens[ii - 1].type !== 'bullet_list_open') {
         ii--;
@@ -390,7 +392,7 @@ module.exports = function (options) {
     }, {
       shift: 2,
       type: 'inline',
-      content: utils.hasDelimiter('only', options),
+      content: utils.hasDelimiters('only', options),
       children: function children(arr) {
         return arr.length === 1;
       }
@@ -401,7 +403,7 @@ module.exports = function (options) {
     transform: function transform(tokens, i) {
       var token = tokens[i + 2];
       var content = token.content;
-      var attrs = utils.getAttrs(content, 0, null, options);
+      var attrs = utils.getAttrs(content, 0, options);
       var openingToken = utils.getMatchingOpeningToken(tokens, i);
       utils.addAttrs(attrs, openingToken);
       tokens.splice(i + 1, 3);
@@ -419,13 +421,13 @@ module.exports = function (options) {
       type: 'inline',
       children: [{
         position: -1,
-        content: utils.hasDelimiter('end', options)
+        content: utils.hasDelimiters('end', options)
       }]
     }],
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
       var content = token.content;
-      var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), null, options);
+      var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
       utils.addAttrs(attrs, tokens[i - 2]);
       var trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
       token.content = last(trimmed) !== ' ' ? trimmed : trimmed.slice(0, -1);
@@ -445,12 +447,12 @@ module.exports = function (options) {
       }, {
         position: -1,
         type: 'text',
-        content: utils.hasDelimiter('only', options)
+        content: utils.hasDelimiters('only', options)
       }]
     }],
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
-      var attrs = utils.getAttrs(token.content, 0, null, options);
+      var attrs = utils.getAttrs(token.content, 0, options);
       // find last closing tag
       var ii = i + 1;
       while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) {
@@ -470,7 +472,7 @@ module.exports = function (options) {
       type: 'inline',
       children: [{
         position: -1,
-        content: utils.hasDelimiter('end', options),
+        content: utils.hasDelimiters('end', options),
         type: function type(t) {
           return t !== 'code_inline';
         }
@@ -479,7 +481,7 @@ module.exports = function (options) {
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
       var content = token.content;
-      var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), null, options);
+      var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
       var ii = i + 1;
       while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) {
         ii++;
@@ -506,8 +508,7 @@ function last(arr) {
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
 
-exports.getAttrs = function (str, start, end, options) {
-  // TODO: do not require `end`, stop when } is found
+exports.getAttrs = function (str, start, options) {
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
   var allowedKeyChars = /[^\t\n\f />"'=]/;
   var pairSeparator = ' ';
@@ -570,7 +571,7 @@ exports.getAttrs = function (str, start, end, options) {
     }
 
     // read next key/value pair
-    if (char_ === pairSeparator && !valueInsideQuotes || i === end) {
+    if (char_ === pairSeparator && !valueInsideQuotes) {
       if (key === '') {
         // beginning or ending space: { .red } vs {.red}
         continue;
@@ -628,7 +629,7 @@ exports.addAttrs = function (attrs, token) {
  * @param {string} where to expect {} curly. start, middle, end or only.
  * @return {function(string)} Function which testes if string has curly.
  */
-exports.hasDelimiter = function (where, options) {
+exports.hasDelimiters = function (where, options) {
 
   if (!where) {
     throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');
@@ -683,10 +684,6 @@ exports.hasDelimiter = function (where, options) {
   };
 };
 
-function escapeRegExp(s) {
-  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
 /**
  * Removes last curly from string.
  */
@@ -694,11 +691,22 @@ exports.removeDelimiter = function (str, options) {
   var start = escapeRegExp(options.leftDelimiter);
   var end = escapeRegExp(options.rightDelimiter);
 
-  var curly = new RegExp('[ \\n]?' + start + '[^' + start + end + end + ']+' + end + '$');
+  var curly = new RegExp('[ \\n]?' + start + '[^' + start + end + ']+' + end + '$');
   var pos = str.search(curly);
 
   return pos !== -1 ? str.slice(0, pos) : str;
 };
+
+/**
+ * Escapes special characters in string s such that the string
+ * can be used in `new RegExp`. For example "[" becomes "\\[".
+ *
+ * @param {string} s Regex string.
+ * @return {string} Escaped string.
+ */
+function escapeRegExp(s) {
+  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
 
 /**
  * find corresponding opening block
