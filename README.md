@@ -157,7 +157,7 @@ Remember to [render attributes](https://github.com/arve0/markdown-it-attrs/blob/
 You can configure `markdown-it-attrs` to use a different delimeter to declare attributes.
 
 ```javascript
-md().use(attrs, {
+md.use(attrs, {
   leftDelimiter: '[',
   rightDelimiter: ']'
 });
