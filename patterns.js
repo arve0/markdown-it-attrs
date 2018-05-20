@@ -25,7 +25,7 @@ module.exports = options => ([
     transform: (tokens, i) => {
       let token = tokens[i];
       let start = token.info.lastIndexOf(options.leftDelimiter);
-      let attrs = utils.getAttrs(token.info, start, null, options);
+      let attrs = utils.getAttrs(token.info, start, options);
       utils.addAttrs(attrs, token);
       token.info = utils.removeDelimiter(token.info, options);
     }
@@ -57,7 +57,7 @@ module.exports = options => ([
       let token = tokens[i].children[j];
       let endChar = token.content.indexOf(options.rightDelimiter);
       let attrToken = tokens[i].children[j - 1];
-      let attrs = utils.getAttrs(token.content, 0, null, options);
+      let attrs = utils.getAttrs(token.content, 0, options);
       utils.addAttrs(attrs, attrToken);
       if (token.content.length === (endChar + 1)) {
         tokens[i].children.splice(j, 1);
@@ -91,7 +91,7 @@ module.exports = options => ([
     transform: (tokens, i) => {
       let token = tokens[i + 2];
       let tableOpen = utils.getMatchingOpeningToken(tokens, i);
-      let attrs = utils.getAttrs(token.content, 0, null, options);
+      let attrs = utils.getAttrs(token.content, 0, options);
       // add attributes
       utils.addAttrs(attrs, tableOpen);
       // remove <p>{.c}</p>
@@ -121,7 +121,7 @@ module.exports = options => ([
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, 0, null, options);
+      let attrs = utils.getAttrs(content, 0, options);
       let openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
       utils.addAttrs(attrs, openingToken);
       token.content = content.slice(content.indexOf(options.rightDelimiter) + 1);
@@ -153,7 +153,7 @@ module.exports = options => ([
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, 0, null, options);
+      let attrs = utils.getAttrs(content, 0, options);
       let ii = i - 2;
       while (tokens[ii - 1] &&
         tokens[ii - 1].type !== 'ordered_list_open' &&
@@ -194,7 +194,7 @@ module.exports = options => ([
     transform: (tokens, i) => {
       let token = tokens[i + 2];
       let content = token.content;
-      let attrs = utils.getAttrs(content, 0, null, options);
+      let attrs = utils.getAttrs(content, 0, options);
       let openingToken = utils.getMatchingOpeningToken(tokens, i);
       utils.addAttrs(attrs, openingToken);
       tokens.splice(i + 1, 3);
@@ -222,7 +222,7 @@ module.exports = options => ([
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), null, options);
+      let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
       utils.addAttrs(attrs, tokens[i - 2]);
       let trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
       token.content = last(trimmed) !== ' ' ?
@@ -252,7 +252,7 @@ module.exports = options => ([
     ],
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
-      let attrs = utils.getAttrs(token.content, 0, null, options);
+      let attrs = utils.getAttrs(token.content, 0, options);
       // find last closing tag
       let ii = i + 1;
       while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
@@ -281,7 +281,7 @@ module.exports = options => ([
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), null, options);
+      let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
       let ii = i + 1;
       while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
       let openingToken = utils.getMatchingOpeningToken(tokens, ii);

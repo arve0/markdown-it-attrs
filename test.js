@@ -15,14 +15,14 @@ describe('markdown-it-attrs.utils', () => {
   it('should parse {.class ..css-module #id key=val}', () => {
     let src = '{.red ..mod #head key=val}';
     let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val']];
-    let res = utils.getAttrs(src, 0, null, options);
+    let res = utils.getAttrs(src, 0, options);
     assert.deepEqual(res, expected);
   });
 
   it('should parse [.class ..css-module #id key=val]', () => {
     let src = '[.red ..mod #head key=val]';
     let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val']];
-    let res = utils.getAttrs(src, 0, null, {
+    let res = utils.getAttrs(src, 0, {
       leftDelimiter: '[',
       rightDelimiter: ']'
     });

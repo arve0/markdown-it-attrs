@@ -5,8 +5,7 @@
  * @param {int} start: where to start parsing (including {)
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
-exports.getAttrs = function (str, start, end, options) {
-  // TODO: do not require `end`, stop when } is found
+exports.getAttrs = function (str, start, options) {
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
   const allowedKeyChars = /[^\t\n\f />"'=]/;
   const pairSeparator = ' ';
@@ -67,7 +66,7 @@ exports.getAttrs = function (str, start, end, options) {
     }
 
     // read next key/value pair
-    if ((char_ === pairSeparator && !valueInsideQuotes) || i === end) {
+    if ((char_ === pairSeparator && !valueInsideQuotes)) {
       if (key === '') {
         // beginning or ending space: { .red } vs {.red}
         continue;
@@ -142,7 +141,7 @@ exports.hasDelimiter = function (where, options) {
       return false;
     }
 
-    function validCurlyLength(curly) {
+    function validCurlyLength (curly) {
       let isClass = curly.charAt(1) === '.';
       let isId = curly.charAt(1) === '#';
       return (isClass || isId)
