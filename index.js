@@ -7,7 +7,11 @@ const defaultOptions = {
   rightDelimiter: '}'
 };
 
-module.exports = function attributes(md, options = defaultOptions) {
+module.exports = function attributes(md, options) {
+  if (!options) {
+    options = defaultOptions;
+  }
+
   const patterns = patternsConfig(options); 
 
   function curlyAttrs(state) {
