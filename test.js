@@ -6,11 +6,26 @@ const implicitFigures = require('markdown-it-implicit-figures');
 const attrs = require('./');
 const utils = require('./utils.js');
 
+const options = {
+  leftDelimiter: '{',
+  rightDelimiter: '}'
+};
+
 describe('markdown-it-attrs.utils', () => {
   it('should parse {.class ..css-module #id key=val}', () => {
     let src = '{.red ..mod #head key=val}';
     let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val']];
-    let res = utils.getAttrs(src, 0);
+    let res = utils.getAttrs(src, 0, null, options);
+    assert.deepEqual(res, expected);
+  });
+
+  it('should parse [.class ..css-module #id key=val]', () => {
+    let src = '[.red ..mod #head key=val]';
+    let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val']];
+    let res = utils.getAttrs(src, 0, null, {
+      leftDelimiter: '[',
+      rightDelimiter: ']'
+    });
     assert.deepEqual(res, expected);
   });
 });
@@ -283,6 +298,19 @@ describe('markdown-it-attrs', () => {
   it('should do nothing with empty id {#}', () => {
     src = 'text {#}';
     expected = '<p>text {#}</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+
+  it('should support configuring delimeter', () => {
+    md = Md().use(attrs, {
+      leftDelimiter: '[',
+      rightDelimiter: ']'
+    });
+
+    src = '- item[.red]\n[.blue]';
+    expected = '<ul class="blue">\n';
+    expected += '<li class="red">item</li>\n';
+    expected += '</ul>\n';
     assert.equal(md.render(src), expected);
   });
 });

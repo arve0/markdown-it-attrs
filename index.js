@@ -1,8 +1,14 @@
 'use strict';
 
-const patterns = require('./patterns.js');
+const patternsConfig = require('./patterns.js');
 
-module.exports = function attributes(md) {
+const defaultOptions = {
+  leftDelimiter: '{',
+  rightDelimiter: '}'
+};
+
+module.exports = function attributes(md, options = defaultOptions) {
+  const patterns = patternsConfig(options); 
 
   function curlyAttrs(state) {
     let tokens = state.tokens;

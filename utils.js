@@ -5,7 +5,7 @@
  * @param {int} start: where to start parsing (including {)
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
-exports.getAttrs = function (str, start, end) {
+exports.getAttrs = function (str, start, end, options) {
   // TODO: do not require `end`, stop when } is found
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
   const allowedKeyChars = /[^\t\n\f />"'=]/;
@@ -13,7 +13,7 @@ exports.getAttrs = function (str, start, end) {
   const keySeparator = '=';
   const classChar = '.';
   const idChar = '#';
-  const endChar = '}';
+  const endChar = options.rightDelimiter;
 
   const attrs = [];
   let key = '';
@@ -125,7 +125,7 @@ exports.addAttrs = function (attrs, token) {
  * @param {string} where to expect {} curly. start, middle, end or only.
  * @return {function(string)} Function which testes if string has curly.
  */
-exports.hasCurly = function (where) {
+exports.hasDelimiter = function (where, options) {
 
   if (!where) {
     throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');
@@ -154,26 +154,26 @@ exports.hasCurly = function (where) {
     switch (where) {
     case 'start':
       // first char should be {, } found in char 2 or more
-      start = str.charAt(0) === '{' ? 0 : -1;
-      end = start === -1 ? -1 : str.indexOf('}', start + minCurlyLength - 1);
+      start = str.charAt(0) === options.leftDelimiter ? 0 : -1;
+      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + minCurlyLength - 1);
       break;
 
     case 'middle':
       // 'a{.b}'
-      start = str.indexOf('{', 1);
-      end = start === -1 ? -1 : str.indexOf('}', start + minCurlyLength - 1);
+      start = str.indexOf(options.leftDelimiter, 1);
+      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + minCurlyLength - 1);
       break;
 
     case 'end':
       // last char should be }
-      end = str.charAt(str.length - 1) === '}' ? str.length - 1 : -1;
-      start = end === -1 ? -1 : str.lastIndexOf('{');
+      end = str.charAt(str.length - 1) === options.rightDelimiter ? str.length - 1 : -1;
+      start = end === -1 ? -1 : str.lastIndexOf(options.leftDelimiter);
       break;
 
     case 'only':
       // '{.a}'
-      start = str.charAt(0) === '{' ? 0 : -1;
-      end = str.charAt(str.length - 1) === '}' ? str.length - 1 : -1;
+      start = str.charAt(0) === options.leftDelimiter ? 0 : -1;
+      end = str.charAt(str.length - 1) === options.rightDelimiter ? str.length - 1 : -1;
       break;
     }
 
@@ -181,11 +181,20 @@ exports.hasCurly = function (where) {
   };
 };
 
+function escapeRegExp(s) {
+  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
 /**
  * Removes last curly from string.
  */
-exports.removeCurly = function (str) {
-  let curly = /[ \n]?{[^{}}]+}$/;
+exports.removeDelimiter = function (str, options) {
+  const start = escapeRegExp(options.leftDelimiter);
+  const end = escapeRegExp(options.rightDelimiter);
+
+  let curly = new RegExp(
+    '[ \\n]?' + start + '[^' + start + end + end + ']+' + end + '$'
+  );
   let pos = str.search(curly);
 
   return pos !== -1 ? str.slice(0, pos) : str;

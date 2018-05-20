@@ -6,7 +6,7 @@
 
 const utils = require('./utils.js');
 
-module.exports = [
+module.exports = options => ([
   {
     /**
      * ```python {.cls}
@@ -19,15 +19,15 @@ module.exports = [
       {
         shift: 0,
         block: true,
-        info: utils.hasCurly('end')
+        info: utils.hasDelimiter('end', options)
       }
     ],
     transform: (tokens, i) => {
       let token = tokens[i];
-      let start = token.info.lastIndexOf('{');
-      let attrs = utils.getAttrs(token.info, start);
+      let start = token.info.lastIndexOf(options.leftDelimiter);
+      let attrs = utils.getAttrs(token.info, start, null, options);
       utils.addAttrs(attrs, token);
-      token.info = utils.removeCurly(token.info);
+      token.info = utils.removeDelimiter(token.info, options);
     }
   }, {
     /**
@@ -48,16 +48,16 @@ module.exports = [
           }, {
             shift: 0,
             type: 'text',
-            content: utils.hasCurly('start')
+            content: utils.hasDelimiter('start', options)
           }
         ]
       }
     ],
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
-      let endChar = token.content.indexOf('}');
+      let endChar = token.content.indexOf(options.rightDelimiter);
       let attrToken = tokens[i].children[j - 1];
-      let attrs = utils.getAttrs(token.content, 0);
+      let attrs = utils.getAttrs(token.content, 0, null, options);
       utils.addAttrs(attrs, attrToken);
       if (token.content.length === (endChar + 1)) {
         tokens[i].children.splice(j, 1);
@@ -85,13 +85,13 @@ module.exports = [
       }, {
         shift: 2,
         type: 'inline',
-        content: utils.hasCurly('only')
+        content: utils.hasDelimiter('only', options)
       }
     ],
     transform: (tokens, i) => {
       let token = tokens[i + 2];
       let tableOpen = utils.getMatchingOpeningToken(tokens, i);
-      let attrs = utils.getAttrs(token.content, 0);
+      let attrs = utils.getAttrs(token.content, 0, null, options);
       // add attributes
       utils.addAttrs(attrs, tableOpen);
       // remove <p>{.c}</p>
@@ -113,7 +113,7 @@ module.exports = [
           }, {
             shift: 0,
             type: 'text',
-            content: utils.hasCurly('start')
+            content: utils.hasDelimiter('start', options)
           }
         ]
       }
@@ -121,10 +121,10 @@ module.exports = [
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, 0);
+      let attrs = utils.getAttrs(content, 0, null, options);
       let openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
       utils.addAttrs(attrs, openingToken);
-      token.content = content.slice(content.indexOf('}') + 1);
+      token.content = content.slice(content.indexOf(options.rightDelimiter) + 1);
     }
   }, {
     /**
@@ -145,7 +145,7 @@ module.exports = [
             type: 'softbreak'
           }, {
             position: -1,
-            content: utils.hasCurly('only')
+            content: utils.hasDelimiter('only', options)
           }
         ]
       }
@@ -153,7 +153,7 @@ module.exports = [
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, 0);
+      let attrs = utils.getAttrs(content, 0, null, options);
       let ii = i - 2;
       while (tokens[ii - 1] &&
         tokens[ii - 1].type !== 'ordered_list_open' &&
@@ -184,7 +184,7 @@ module.exports = [
       }, {
         shift: 2,
         type: 'inline',
-        content: utils.hasCurly('only'),
+        content: utils.hasDelimiter('only', options),
         children: (arr) => arr.length === 1
       }, {
         shift: 3,
@@ -194,7 +194,7 @@ module.exports = [
     transform: (tokens, i) => {
       let token = tokens[i + 2];
       let content = token.content;
-      let attrs = utils.getAttrs(content, 0);
+      let attrs = utils.getAttrs(content, 0, null, options);
       let openingToken = utils.getMatchingOpeningToken(tokens, i);
       utils.addAttrs(attrs, openingToken);
       tokens.splice(i + 1, 3);
@@ -214,7 +214,7 @@ module.exports = [
         children: [
           {
             position: -1,
-            content: utils.hasCurly('end')
+            content: utils.hasDelimiter('end', options)
           }
         ]
       }
@@ -222,9 +222,9 @@ module.exports = [
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, content.lastIndexOf('{'));
+      let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), null, options);
       utils.addAttrs(attrs, tokens[i - 2]);
-      let trimmed = content.slice(0, content.lastIndexOf('{'));
+      let trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
       token.content = last(trimmed) !== ' ' ?
         trimmed : trimmed.slice(0, -1);
     }
@@ -245,14 +245,14 @@ module.exports = [
           }, {
             position: -1,
             type: 'text',
-            content: utils.hasCurly('only')
+            content: utils.hasDelimiter('only', options)
           }
         ]
       }
     ],
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
-      let attrs = utils.getAttrs(token.content, 0);
+      let attrs = utils.getAttrs(token.content, 0, null, options);
       // find last closing tag
       let ii = i + 1;
       while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
@@ -272,7 +272,7 @@ module.exports = [
         children: [
           {
             position: -1,
-            content: utils.hasCurly('end'),
+            content: utils.hasDelimiter('end', options),
             type: (t) => t !== 'code_inline'
           }
         ]
@@ -281,17 +281,17 @@ module.exports = [
     transform: (tokens, i, j) => {
       let token = tokens[i].children[j];
       let content = token.content;
-      let attrs = utils.getAttrs(content, content.lastIndexOf('{'));
+      let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), null, options);
       let ii = i + 1;
       while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
       let openingToken = utils.getMatchingOpeningToken(tokens, ii);
       utils.addAttrs(attrs, openingToken);
-      let trimmed = content.slice(0, content.lastIndexOf('{'));
+      let trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
       token.content = last(trimmed) !== ' ' ?
         trimmed : trimmed.slice(0, -1);
     }
   }
-];
+]);
 
 // get last element of array or string
 function last(arr) {
