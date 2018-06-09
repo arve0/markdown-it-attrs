@@ -262,6 +262,38 @@ module.exports = options => ([
     }
   }, {
     /**
+     * horizontal rule --- {#id}
+     */
+    name: 'horizontal rule',
+    tests: [
+      {
+        shift: 0,
+        type: 'paragraph_open'
+      },
+      {
+        shift: 1,
+        type: 'inline',
+        children: (arr) => arr.length === 1,
+        content: (str) => str.match(/^ {0,3}[-*_]{3,} {0,1}\{[^{]/) !== null
+      },
+      {
+        shift: 2,
+        type: 'paragraph_close'
+      }
+    ],
+    transform: (tokens, i) => {
+      let token = tokens[i];
+      token.type = 'hr';
+      token.tag = 'hr';
+      token.nesting = 0;
+      let content = tokens[i + 1].content;
+      let start = content.lastIndexOf('{');
+      token.attrs = utils.getAttrs(content, start, options);
+      token.markup = content;
+      tokens.splice(i + 1, 2);
+    }
+  }, {
+    /**
      * end of {.block}
      */
     name: 'end of block',

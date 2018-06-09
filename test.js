@@ -313,5 +313,12 @@ describe('markdown-it-attrs', () => {
     expected += '</ul>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should support horizontal rules ---{#id}', () => {
+    src = '---{#id}';
+    expected = '<hr id="id">\n';
+    assert.equal(md.render(src), expected);
+  });
+
 });
 
