@@ -230,6 +230,8 @@ function last(arr) {
 var utils = require('./utils.js');
 
 module.exports = function (options) {
+  var __hr = new RegExp('^ {0,3}[-*_]{3,} ?' + utils.escapeRegExp(options.leftDelimiter) + '[^' + utils.escapeRegExp(options.rightDelimiter) + ']');
+
   return [{
     /**
      * ```python {.cls}
@@ -278,10 +280,10 @@ module.exports = function (options) {
       var attrToken = tokens[i].children[j - 1];
       var attrs = utils.getAttrs(token.content, 0, options);
       utils.addAttrs(attrs, attrToken);
-      if (token.content.length === endChar + 1) {
+      if (token.content.length === endChar + options.rightDelimiter.length) {
         tokens[i].children.splice(j, 1);
       } else {
-        token.content = token.content.slice(endChar + 1);
+        token.content = token.content.slice(endChar + options.rightDelimiter.length);
       }
     }
   }, {
@@ -337,7 +339,7 @@ module.exports = function (options) {
       var attrs = utils.getAttrs(content, 0, options);
       var openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
       utils.addAttrs(attrs, openingToken);
-      token.content = content.slice(content.indexOf(options.rightDelimiter) + 1);
+      token.content = content.slice(content.indexOf(options.rightDelimiter) + options.rightDelimiter.length);
     }
   }, {
     /**
@@ -477,7 +479,7 @@ module.exports = function (options) {
         return arr.length === 1;
       },
       content: function content(str) {
-        return str.match(/^ {0,3}[-*_]{3,} {0,1}\{[^{]/) !== null;
+        return str.match(__hr) !== null;
       }
     }, {
       shift: 2,
@@ -489,7 +491,7 @@ module.exports = function (options) {
       token.tag = 'hr';
       token.nesting = 0;
       var content = tokens[i + 1].content;
-      var start = content.lastIndexOf('{');
+      var start = content.lastIndexOf(options.leftDelimiter);
       token.attrs = utils.getAttrs(content, start, options);
       token.markup = content;
       tokens.splice(i + 1, 2);
@@ -547,7 +549,6 @@ exports.getAttrs = function (str, start, options) {
   var keySeparator = '=';
   var classChar = '.';
   var idChar = '#';
-  var endChar = options.rightDelimiter;
 
   var attrs = [];
   var key = '';
@@ -556,16 +557,16 @@ exports.getAttrs = function (str, start, options) {
   var valueInsideQuotes = false;
 
   // read inside {}
-  // start + 1 to avoid beginning {
+  // start + left delimiter length to avoid beginning {
   // breaks when } is found or end of string
-  for (var i = start + 1; i < str.length; i++) {
-    var char_ = str.charAt(i);
-    if (char_ === endChar) {
+  for (var i = start + options.leftDelimiter.length; i < str.length; i++) {
+    if (str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
       if (key !== '') {
         attrs.push([key, value]);
       }
       break;
     }
+    var char_ = str.charAt(i);
 
     // switch to reading value if equal sign
     if (char_ === keySeparator) {
@@ -673,46 +674,52 @@ exports.hasDelimiters = function (where, options) {
    */
   return function (str) {
     // we need minimum three chars, for example {b}
-    var minCurlyLength = 3;
+    var minCurlyLength = options.leftDelimiter.length + 1 + options.rightDelimiter.length;
     if (!str || typeof str !== 'string' || str.length < minCurlyLength) {
       return false;
     }
 
     function validCurlyLength(curly) {
-      var isClass = curly.charAt(1) === '.';
-      var isId = curly.charAt(1) === '#';
+      var isClass = curly.charAt(options.leftDelimiter.length) === '.';
+      var isId = curly.charAt(options.leftDelimiter.length) === '#';
       return isClass || isId ? curly.length >= minCurlyLength + 1 : curly.length >= minCurlyLength;
     }
 
     var start = void 0,
-        end = void 0;
+        end = void 0,
+        slice = void 0,
+        nextChar = void 0;
+    var rightDelimiterMinimumShift = minCurlyLength - options.rightDelimiter.length;
     switch (where) {
       case 'start':
         // first char should be {, } found in char 2 or more
-        start = str.charAt(0) === options.leftDelimiter ? 0 : -1;
-        end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + minCurlyLength - 1);
-        break;
-
-      case 'middle':
-        // 'a{.b}'
-        start = str.indexOf(options.leftDelimiter, 1);
-        end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + minCurlyLength - 1);
+        slice = str.slice(0, options.leftDelimiter.length);
+        start = slice === options.leftDelimiter ? 0 : -1;
+        end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, rightDelimiterMinimumShift);
+        // check if next character is not one of the delimiters
+        nextChar = str.charAt(end + options.rightDelimiter.length);
+        if (nextChar && options.rightDelimiter.indexOf(nextChar) !== -1) {
+          end = -1;
+        }
         break;
 
       case 'end':
         // last char should be }
-        end = str.charAt(str.length - 1) === options.rightDelimiter ? str.length - 1 : -1;
-        start = end === -1 ? -1 : str.lastIndexOf(options.leftDelimiter);
+        start = str.lastIndexOf(options.leftDelimiter);
+        end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + rightDelimiterMinimumShift);
+        end = end === str.length - options.rightDelimiter.length ? end : -1;
         break;
 
       case 'only':
         // '{.a}'
-        start = str.charAt(0) === options.leftDelimiter ? 0 : -1;
-        end = str.charAt(str.length - 1) === options.rightDelimiter ? str.length - 1 : -1;
+        slice = str.slice(0, options.leftDelimiter.length);
+        start = slice === options.leftDelimiter ? 0 : -1;
+        slice = str.slice(str.length - options.rightDelimiter.length);
+        end = slice === options.rightDelimiter ? str.length - options.rightDelimiter.length : -1;
         break;
     }
 
-    return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + 1));
+    return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + options.rightDelimiter.length));
   };
 };
 
@@ -739,6 +746,7 @@ exports.removeDelimiter = function (str, options) {
 function escapeRegExp(s) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
+exports.escapeRegExp = escapeRegExp;
 
 /**
  * find corresponding opening block
