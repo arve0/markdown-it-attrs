@@ -12,7 +12,7 @@ module.exports = function attributes(md, options) {
     options = defaultOptions;
   }
 
-  const patterns = patternsConfig(options); 
+  const patterns = patternsConfig(options);
 
   function curlyAttrs(state) {
     let tokens = state.tokens;
