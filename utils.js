@@ -12,7 +12,6 @@ exports.getAttrs = function (str, start, options) {
   const keySeparator = '=';
   const classChar = '.';
   const idChar = '#';
-  const endChar = options.rightDelimiter;
 
   const attrs = [];
   let key = '';
@@ -21,14 +20,14 @@ exports.getAttrs = function (str, start, options) {
   let valueInsideQuotes = false;
 
   // read inside {}
-  // start + 1 to avoid beginning {
+  // start + left delimiter length to avoid beginning {
   // breaks when } is found or end of string
-  for (let i = start + 1; i < str.length; i++) {
-    let char_ = str.charAt(i);
-    if (char_ === endChar) {
+  for (let i = start + options.leftDelimiter.length; i < str.length; i++) {
+    if (str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
       if (key !== '') { attrs.push([key, value]); }
       break;
     }
+    let char_ = str.charAt(i);
 
     // switch to reading value if equal sign
     if (char_ === keySeparator) {
@@ -136,47 +135,52 @@ exports.hasDelimiters = function (where, options) {
    */
   return function (str) {
     // we need minimum three chars, for example {b}
-    let minCurlyLength = 3;
+    let minCurlyLength = options.leftDelimiter.length + 1 + options.rightDelimiter.length;
     if (!str || typeof str !== 'string' || str.length < minCurlyLength) {
       return false;
     }
 
     function validCurlyLength (curly) {
-      let isClass = curly.charAt(1) === '.';
-      let isId = curly.charAt(1) === '#';
+      let isClass = curly.charAt(options.leftDelimiter.length) === '.';
+      let isId = curly.charAt(options.leftDelimiter.length) === '#';
       return (isClass || isId)
         ? curly.length >= (minCurlyLength + 1)
         : curly.length >= minCurlyLength;
     }
 
-    let start, end;
+    let start, end, slice;
+    let rightDelimiterMinimumShift = minCurlyLength - options.rightDelimiter.length;
     switch (where) {
     case 'start':
       // first char should be {, } found in char 2 or more
-      start = str.charAt(0) === options.leftDelimiter ? 0 : -1;
-      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + minCurlyLength - 1);
+      slice = str.slice(0, options.leftDelimiter.length);
+      start = slice === options.leftDelimiter ? 0 : -1;
+      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, rightDelimiterMinimumShift);
       break;
 
     case 'middle':
       // 'a{.b}'
       start = str.indexOf(options.leftDelimiter, 1);
-      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + minCurlyLength - 1);
+      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + rightDelimiterMinimumShift);
       break;
 
     case 'end':
       // last char should be }
-      end = str.charAt(str.length - 1) === options.rightDelimiter ? str.length - 1 : -1;
+      slice = str.slice(str.length - options.rightDelimiter.length);
+      end = slice === options.rightDelimiter ? str.length - 1 : -1;
       start = end === -1 ? -1 : str.lastIndexOf(options.leftDelimiter);
       break;
 
     case 'only':
       // '{.a}'
-      start = str.charAt(0) === options.leftDelimiter ? 0 : -1;
-      end = str.charAt(str.length - 1) === options.rightDelimiter ? str.length - 1 : -1;
+      slice = str.slice(0, options.leftDelimiter.length);
+      start = slice === options.leftDelimiter ? 0 : -1;
+      slice = str.slice(str.length - options.rightDelimiter.length);
+      end = slice === options.rightDelimiter ? str.length - options.rightDelimiter.length : -1;
       break;
     }
 
-    return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + 1));
+    return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + options.rightDelimiter.length));
   };
 };
 
@@ -205,6 +209,7 @@ exports.removeDelimiter = function (str, options) {
 function escapeRegExp (s) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
+exports.escapeRegExp = escapeRegExp;
 
 /**
  * find corresponding opening block
