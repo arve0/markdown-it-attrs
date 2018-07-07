@@ -44,6 +44,12 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    it(replaceDelimiters('should not add attributes when it has too many delimiters {{}}', options), () => {
+      src = 'some text {{with=attrs}}';
+      expected = '<p>some text {{with=attrs}}</p>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
+    });
+
     it(replaceDelimiters('should add attributes when {} in last line', options), () => {
       src = 'some text\n{with=attrs}';
       expected = '<p with="attrs">some text</p>\n';
@@ -107,6 +113,12 @@ function describeTestsWithOptions(options, postText) {
       src = 'paragraph **bold**{.red} asdf';
       expected = '<p>paragraph <strong class="red">bold</strong> asdf</p>\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it(replaceDelimiters('should not add classes to inline elements with too many {{}}', options), () => {
+      src = 'paragraph **bold**{{.red}} asdf';
+      expected = '<p>paragraph <strong>bold</strong>{{.red}} asdf</p>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
     });
 
     it(replaceDelimiters('should only remove last {}', options), () => {

@@ -148,7 +148,7 @@ exports.hasDelimiters = function (where, options) {
         : curly.length >= minCurlyLength;
     }
 
-    let start, end, slice;
+    let start, end, slice, nextChar;
     let rightDelimiterMinimumShift = minCurlyLength - options.rightDelimiter.length;
     switch (where) {
     case 'start':
@@ -156,19 +156,18 @@ exports.hasDelimiters = function (where, options) {
       slice = str.slice(0, options.leftDelimiter.length);
       start = slice === options.leftDelimiter ? 0 : -1;
       end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, rightDelimiterMinimumShift);
-      break;
-
-    case 'middle':
-      // 'a{.b}'
-      start = str.indexOf(options.leftDelimiter, 1);
-      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + rightDelimiterMinimumShift);
+      // check if next character is not one of the delimiters
+      nextChar = str.charAt(end + options.rightDelimiter.length);
+      if (nextChar && options.rightDelimiter.indexOf(nextChar) !== -1) {
+        end = -1;
+      }
       break;
 
     case 'end':
       // last char should be }
-      slice = str.slice(str.length - options.rightDelimiter.length);
-      end = slice === options.rightDelimiter ? str.length - 1 : -1;
-      start = end === -1 ? -1 : str.lastIndexOf(options.leftDelimiter);
+      start = str.lastIndexOf(options.leftDelimiter);
+      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + rightDelimiterMinimumShift);
+      end = end === str.length - options.rightDelimiter.length ? end : -1;
       break;
 
     case 'only':
