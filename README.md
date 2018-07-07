@@ -152,19 +152,27 @@ If you need finer control, [decorate](https://github.com/rstacruz/markdown-it-de
 
 Remember to [render attributes](https://github.com/arve0/markdown-it-attrs/blob/a75102ad571110659ce9545d184aa5658d2b4a06/index.js#L100) if you use a custom renderer.
 
-## Custom Delimiter
+## Custom delimiters
 
-You can configure `markdown-it-attrs` to use a different delimeter to declare attributes.
+To use different delimiters then the default, add configuration for `leftDelimiter` and `rightDelimiter`:
 
-```javascript
+```js
 md.use(attrs, {
   leftDelimiter: '[',
   rightDelimiter: ']'
 });
 ```
 
-```markdown
-# Title [.large]
+Which will render
+
+```md
+# title [.large]
+```
+
+as
+
+```html
+<h1 class="large">title</h1>
 ```
 
 ## License
