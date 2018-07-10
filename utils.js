@@ -30,7 +30,7 @@ exports.getAttrs = function (str, start, options) {
     let char_ = str.charAt(i);
 
     // switch to reading value if equal sign
-    if (char_ === keySeparator) {
+    if (char_ === keySeparator && parsingKey) {
       parsingKey = false;
       continue;
     }

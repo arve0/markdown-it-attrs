@@ -30,6 +30,13 @@ function describeTestsWithOptions(options, postText) {
       let res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
       assert.deepEqual(res, expected);
     });
+
+    it(replaceDelimiters('should parse attributes with = {attr=/id=1}', options), () => {
+      let src = '{link=/some/page/in/app/id=1}';
+      let expected = [['link', '/some/page/in/app/id=1']];
+      let res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
+      assert.deepEqual(res, expected);
+    });
   });
 
   describe('markdown-it-attrs' + postText, () => {
