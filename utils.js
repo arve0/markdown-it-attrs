@@ -89,7 +89,25 @@ exports.getAttrs = function (str, start, options) {
     }
     value += char_;
   }
-  return attrs;
+
+  if (options.allowedAttributes.length) {
+    return attrs.filter(function(a) {
+      var allowedAttributes = options.allowedAttributes;
+      var attr = a[0],
+          val = a[1];
+      var allowed = false;
+      for (var i = 0; i < allowedAttributes.length; i++) {
+        var attrName = allowedAttributes[i];
+        if (attrName === attr || (attrName instanceof RegExp && attrName.test(attr))) {
+          allowed = true;
+          break;
+        }
+      }
+      return allowed;
+    });
+  } else {
+    return attrs;
+  }
 };
 
 /**
