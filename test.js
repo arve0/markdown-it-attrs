@@ -24,9 +24,9 @@ describeTestsWithOptions({
 
 function describeTestsWithOptions(options, postText) {
   describe('markdown-it-attrs.utils' + postText, () => {
-    it(replaceDelimiters('should parse {.class ..css-module #id key=val}', options), () => {
-      let src = '{.red ..mod #head key=val}';
-      let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val']];
+    it(replaceDelimiters('should parse {.class ..css-module #id key=val .class.with.dot}', options), () => {
+      let src = '{.red ..mod #head key=val .class.with.dot}';
+      let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val'], ['class', 'class.with.dot']];
       let res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
       assert.deepEqual(res, expected);
     });
