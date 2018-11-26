@@ -1,24 +1,55 @@
 {
-  "name": "markdown-it-attrs",
-  "version": "2.3.2",
-  "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
-  "main": "index.js",
-  "license": "MIT",
-  "repository": "arve0/markdown-it-attrs",
+  "_args": [
+    [
+      "markdown-it-attrs@2.3.2",
+      "/Users/janzheng/Desktop/projects/phagedir/phdir"
+    ]
+  ],
+  "_from": "markdown-it-attrs@2.3.2",
+  "_id": "markdown-it-attrs@2.3.2",
+  "_inBundle": false,
+  "_integrity": "sha512-DyatNvpatg7w+fGkplWGeie7o/0TogBr2w0izyz9ZQfTMv5G3lbDHQFQ42aP2e5L2mJQt0IeAjWzvYaa2d9xzQ==",
+  "_location": "/markdown-it-attrs",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "markdown-it-attrs@2.3.2",
+    "name": "markdown-it-attrs",
+    "escapedName": "markdown-it-attrs",
+    "rawSpec": "2.3.2",
+    "saveSpec": null,
+    "fetchSpec": "2.3.2"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/markdown-it-attrs/-/markdown-it-attrs-2.3.2.tgz",
+  "_spec": "2.3.2",
+  "_where": "/Users/janzheng/Desktop/projects/phagedir/phdir",
   "author": {
     "name": "Arve Seljebu",
     "email": "arve.seljebu@gmail.com",
     "url": "arve0.github.io"
   },
+  "bugs": {
+    "url": "https://github.com/arve0/markdown-it-attrs/issues"
+  },
+  "dependencies": {},
+  "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
+  "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^10.0.0",
+    "browserify": "^16.2.3",
+    "eslint": "^4.3.0",
+    "markdown-it": ">=7.0.1",
+    "markdown-it-implicit-figures": "^0.6.0",
+    "mocha": "*"
+  },
   "engines": {
     "node": ">=6"
-  },
-  "scripts": {
-    "browser": "browserify index.js -t [ babelify --presets es2015 ] --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
-    "lint": "eslint .",
-    "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
-    "postpublish": "git push && git push --tags",
-    "test": "npm run lint && mocha"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [
@@ -38,18 +69,23 @@
     "pandoc",
     "header_attributes"
   ],
-  "dependencies": {},
-  "devDependencies": {
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.0",
-    "eslint": "^4.3.0",
-    "markdown-it": ">=7.0.1",
-    "markdown-it-implicit-figures": "^0.6.0",
-    "mocha": "*"
-  },
+  "license": "MIT",
+  "main": "index.js",
+  "name": "markdown-it-attrs",
   "peerDependencies": {
     "markdown-it": ">=7.0.1"
   },
-  "tonicExampleFilename": "demo.js"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arve0/markdown-it-attrs.git"
+  },
+  "scripts": {
+    "browser": "browserify index.js -t [ babelify --presets [ @babel/preset-env ] ] --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
+    "lint": "eslint .",
+    "postpublish": "git push && git push --tags",
+    "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
+    "test": "npm run lint && mocha"
+  },
+  "tonicExampleFilename": "demo.js",
+  "version": "2.3.2"
 }
