@@ -46,7 +46,7 @@ Use the css-module green on this paragraph. {..green}
 
 Output:
 ```html
-<p css-module="gree">Use the css-module green on this paragraph.</p>
+<p css-module="green">Use the css-module green on this paragraph.</p>
 ```
 
 
