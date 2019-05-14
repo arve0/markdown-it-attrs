@@ -7,8 +7,7 @@ var patternsConfig = require('./patterns.js');
 
 var defaultOptions = {
   leftDelimiter: '{',
-  rightDelimiter: '}',
-  allowedAttributes: []
+  rightDelimiter: '}'
 };
 
 module.exports = function attributes(md, options) {
@@ -659,26 +658,7 @@ exports.getAttrs = function (str, start, options) {
     value += char_;
   }
 
-  if (options.allowedAttributes.length) {
-    return attrs.filter(function (a) {
-      var allowedAttributes = options.allowedAttributes;
-      var attr = a[0];
-      var allowed = false;
-
-      for (var _i = 0; _i < allowedAttributes.length; _i++) {
-        var attrName = allowedAttributes[_i];
-
-        if (attrName === attr || attrName instanceof RegExp && attrName.test(attr)) {
-          allowed = true;
-          break;
-        }
-      }
-
-      return allowed;
-    });
-  } else {
-    return attrs;
-  }
+  return attrs;
 };
 /**
  * add attributes from [['key', 'val']] list
