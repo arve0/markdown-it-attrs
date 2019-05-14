@@ -90,14 +90,13 @@ exports.getAttrs = function (str, start, options) {
     value += char_;
   }
 
-  if (options.allowedAttributes.length) {
-    return attrs.filter(function(a) {
-      var allowedAttributes = options.allowedAttributes;
-      var attr = a[0],
-          val = a[1];
-      var allowed = false;
-      for (var i = 0; i < allowedAttributes.length; i++) {
-        var attrName = allowedAttributes[i];
+  if (options.allowedAttributes && options.allowedAttributes.length) {
+    return attrs.filter(function (a) {
+      let allowedAttributes = options.allowedAttributes;
+      let attr = a[0];
+      let allowed = false;
+      for (let i = 0; i < allowedAttributes.length; i++) {
+        let attrName = allowedAttributes[i];
         if (attrName === attr || (attrName instanceof RegExp && attrName.test(attr))) {
           allowed = true;
           break;
@@ -158,7 +157,7 @@ exports.hasDelimiters = function (where, options) {
       return false;
     }
 
-    function validCurlyLength (curly) {
+    function validCurlyLength(curly) {
       let isClass = curly.charAt(options.leftDelimiter.length) === '.';
       let isId = curly.charAt(options.leftDelimiter.length) === '#';
       return (isClass || isId)
@@ -223,7 +222,7 @@ exports.removeDelimiter = function (str, options) {
  * @param {string} s Regex string.
  * @return {string} Escaped string.
  */
-function escapeRegExp (s) {
+function escapeRegExp(s) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 exports.escapeRegExp = escapeRegExp;

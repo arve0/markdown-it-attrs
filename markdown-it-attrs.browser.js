@@ -662,16 +662,18 @@ exports.getAttrs = function (str, start, options) {
   if (options.allowedAttributes.length) {
     return attrs.filter(function (a) {
       var allowedAttributes = options.allowedAttributes;
-      var attr = a[0],
-          val = a[1];
+      var attr = a[0];
       var allowed = false;
-      for (var i = 0; i < allowedAttributes.length; i++) {
-        var attrName = allowedAttributes[i];
+
+      for (var _i = 0; _i < allowedAttributes.length; _i++) {
+        var attrName = allowedAttributes[_i];
+
         if (attrName === attr || attrName instanceof RegExp && attrName.test(attr)) {
           allowed = true;
           break;
         }
       }
+
       return allowed;
     });
   } else {
