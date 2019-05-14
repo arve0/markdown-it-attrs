@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-attrs",
-  "version": "2.3.1",
+  "version": "2.3.4",
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "main": "index.js",
   "license": "MIT",
@@ -8,13 +8,13 @@
   "author": {
     "name": "Arve Seljebu",
     "email": "arve.seljebu@gmail.com",
-    "url": "arve0.github.io"
+    "url": "https://arve0.github.io"
   },
   "engines": {
     "node": ">=6"
   },
   "scripts": {
-    "browser": "browserify index.js -t [ babelify --presets es2015 ] --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
+    "browser": "browserify index.js -t [ babelify --presets [ @babel/preset-env ] ] --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
     "lint": "eslint .",
     "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
     "postpublish": "git push && git push --tags",
@@ -40,16 +40,17 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.0",
-    "eslint": "^4.3.0",
-    "markdown-it": ">=7.0.1",
-    "markdown-it-implicit-figures": "^0.6.0",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "babelify": "^10.0.0",
+    "browserify": "^16.2.3",
+    "eslint": "^5.16.0",
+    "markdown-it": "^8.4.2",
+    "markdown-it-implicit-figures": "^0.9.0",
     "mocha": "*"
   },
   "peerDependencies": {
-    "markdown-it": ">=7.0.1"
+    "markdown-it": "^8.4.2"
   },
   "tonicExampleFilename": "demo.js"
 }
