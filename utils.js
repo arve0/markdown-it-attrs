@@ -157,7 +157,7 @@ exports.hasDelimiters = function (where, options) {
       return false;
     }
 
-    function validCurlyLength(curly) {
+    function validCurlyLength (curly) {
       let isClass = curly.charAt(options.leftDelimiter.length) === '.';
       let isId = curly.charAt(options.leftDelimiter.length) === '#';
       return (isClass || isId)
@@ -222,7 +222,7 @@ exports.removeDelimiter = function (str, options) {
  * @param {string} s Regex string.
  * @return {string} Escaped string.
  */
-function escapeRegExp(s) {
+function escapeRegExp (s) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 exports.escapeRegExp = escapeRegExp;
