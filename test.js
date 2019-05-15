@@ -22,6 +22,12 @@ describeTestsWithOptions({
   rightDelimiter: ']]'
 }, ' with [[ ]] delimiters');
 
+describeTestsWithOptions({
+  leftDelimiter: '{',
+  rightDelimiter: '}',
+  allowedAttributes: ['id', 'class', /^(key|link|with|attr|a|1)$/, /^css-/]
+}, ' with allowedAttributes option');
+
 function describeTestsWithOptions(options, postText) {
   describe('markdown-it-attrs.utils' + postText, () => {
     it(replaceDelimiters('should parse {.class ..css-module #id key=val .class.with.dot}', options), () => {
@@ -327,6 +333,14 @@ function describeTestsWithOptions(options, postText) {
       expected = '<hr id="id">\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
+
+    if (options.allowedAttributes) {
+      it(replaceDelimiters('should filter out attributes restricted by allowedAttributes option', options), () => {
+        src = 'text {.someclass unallowed="filtered" attr="allowed"}';
+        expected = '<p class="someclass" attr="allowed">text</p>\n';
+        assert.equal(md.render(replaceDelimiters(src, options)), expected);
+      });
+    }
   });
 }
 
