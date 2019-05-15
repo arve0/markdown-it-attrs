@@ -95,13 +95,11 @@ exports.getAttrs = function (str, start, options) {
       let allowedAttributes = options.allowedAttributes;
       let attr = a[0];
       let allowed = false;
-      for (let i = 0; i < allowedAttributes.length; i++) {
-        let attrName = allowedAttributes[i];
-        if (attrName === attr || (attrName instanceof RegExp && attrName.test(attr))) {
-          allowed = true;
-          break;
-        }
-      }
+
+      allowed = allowedAttributes.some(function (attrName) {
+        return attrName === attr || (attrName instanceof RegExp && attrName.test(attr));
+      });
+
       return allowed;
     });
   } else {
