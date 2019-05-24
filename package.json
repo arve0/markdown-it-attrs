@@ -15,10 +15,11 @@
   },
   "scripts": {
     "browser": "browserify index.js -t [ babelify --presets [ @babel/preset-env ] ] --standalone markdown-it-attrs -o markdown-it-attrs.browser.js",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint .",
     "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
     "postpublish": "git push && git push --tags",
-    "test": "npm run lint && mocha"
+    "test": "npm run lint && nyc mocha"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [
@@ -26,13 +27,9 @@
     "markdown",
     "markdown-it",
     "markdown-it-plugin",
-    "attribute",
     "attributes",
-    "class",
     "classes",
-    "id",
     "ids",
-    "identifier",
     "identifiers",
     "curly brackets",
     "pandoc",
@@ -44,10 +41,12 @@
     "@babel/preset-env": "^7.4.3",
     "babelify": "^10.0.0",
     "browserify": "^16.2.3",
+    "coveralls": "^3.0.3",
     "eslint": "^5.16.0",
     "markdown-it": "^8.4.2",
     "markdown-it-implicit-figures": "^0.9.0",
-    "mocha": "*"
+    "mocha": "*",
+    "nyc": "^14.1.1"
   },
   "peerDependencies": {
     "markdown-it": "^8.4.2"
