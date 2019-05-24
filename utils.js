@@ -91,17 +91,20 @@ exports.getAttrs = function (str, start, options) {
   }
 
   if (options.allowedAttributes && options.allowedAttributes.length) {
-    return attrs.filter(function (a) {
-      let allowedAttributes = options.allowedAttributes;
-      let attr = a[0];
-      let allowed = false;
+    let allowedAttributes = options.allowedAttributes;
 
-      allowed = allowedAttributes.some(function (attrName) {
-        return attrName === attr || (attrName instanceof RegExp && attrName.test(attr));
-      });
+    return attrs.filter(function (attrPair) {
+      let attr = attrPair[0];
 
-      return allowed;
+      function isAllowedAttribute (allowedAttribute) {
+        return (attr === allowedAttribute
+          || (allowedAttribute instanceof RegExp && allowedAttribute.test(attr))
+        );
+      }
+
+      return allowedAttributes.some(isAllowedAttribute);
     });
+
   } else {
     return attrs;
   }
