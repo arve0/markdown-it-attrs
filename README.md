@@ -174,7 +174,7 @@ Remember to [render attributes](https://github.com/arve0/markdown-it-attrs/blob/
 
 ## Custom delimiters
 
-To use different delimiters then the default, add configuration for `leftDelimiter` and `rightDelimiter`:
+To use different delimiters than the default, add configuration for `leftDelimiter` and `rightDelimiter`:
 
 ```js
 md.use(attrs, {
