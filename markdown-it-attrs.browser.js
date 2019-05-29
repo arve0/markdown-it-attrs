@@ -11,11 +11,9 @@ var defaultOptions = {
   allowedAttributes: []
 };
 
-module.exports = function attributes(md, options) {
-  if (!options) {
-    options = defaultOptions;
-  }
-
+module.exports = function attributes(md, options_) {
+  var options = Object.assign({}, defaultOptions);
+  options = Object.assign(options, options_);
   var patterns = patternsConfig(options);
 
   function curlyAttrs(state) {
