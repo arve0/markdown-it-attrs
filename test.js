@@ -22,6 +22,17 @@ describeTestsWithOptions({
   rightDelimiter: ']]'
 }, ' with [[ ]] delimiters');
 
+describe('markdown-it-attrs', () => {
+  let md, src, expected;
+
+  it('should not throw when getting only allowedAttributes option', () => {
+    md = Md().use(attrs, { allowedAttributes: [/^(class|attr)$/] });
+    src = 'text {.someclass #someid attr=allowed}';
+    expected = '<p class="someclass" attr="allowed">text</p>\n';
+    assert.equal(md.render(src), expected);
+  });
+});
+
 function describeTestsWithOptions(options, postText) {
   describe('markdown-it-attrs.utils' + postText, () => {
     it(replaceDelimiters('should parse {.class ..css-module #id key=val .class.with.dot}', options), () => {

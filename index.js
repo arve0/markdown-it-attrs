@@ -8,10 +8,9 @@ const defaultOptions = {
   allowedAttributes: []
 };
 
-module.exports = function attributes(md, options) {
-  if (!options) {
-    options = defaultOptions;
-  }
+module.exports = function attributes(md, options_) {
+  let options = Object.assign({}, defaultOptions);
+  options = Object.assign(options, options_);
 
   const patterns = patternsConfig(options);
 
