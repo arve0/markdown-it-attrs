@@ -1,4 +1,3 @@
-'use strict';
 let md = require('markdown-it')();
 let markdownItAttrs = require('markdown-it-attrs');
 
