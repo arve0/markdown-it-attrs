@@ -240,12 +240,7 @@ exports.getMatchingOpeningToken = function (tokens, i) {
     return tokens[i];
   }
 
-  // inline tokens changes level on same token
-  // that have .nesting +- 1
-  let level = tokens[i].block
-    ? tokens[i].level
-    : tokens[i].level + 1;  // adjust for inline tokens
-
+  let level = tokens[i].level;
   let type = tokens[i].type.replace('_close', '_open');
 
   for (; i >= 0; --i) {
