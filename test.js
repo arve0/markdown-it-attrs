@@ -309,6 +309,18 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
     });
 
+    it(replaceDelimiters('should not apply inside item lists with trailing `code{.red}`', options), () => {
+      src = '- item with trailing `code = {.red}`';
+      expected = '<ul>\n<li>item with trailing <code>code = {.red}</code></li>\n</ul>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
+    });
+
+    it(replaceDelimiters('should not apply inside item lists with trailing non-text, eg *{.red}*', options), () => {
+      src = '- item with trailing *{.red}*';
+      expected = '<ul>\n<li>item with trailing <em>{.red}</em></li>\n</ul>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
+    });
+
     it(replaceDelimiters('should work with multiple inline code blocks in same paragraph', options), () => {
       src = 'bla `click()`{.c} blah `release()`{.cpp}';
       expected = '<p>bla <code class="c">click()</code> blah <code class="cpp">release()</code></p>\n';
