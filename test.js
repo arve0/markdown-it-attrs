@@ -219,6 +219,22 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    it(replaceDelimiters('should add class ul after a "softbreak"', options), () => {
+      src = '- item\n{.blue}';
+      expected = '<ul class="blue">\n';
+      expected += '<li>item</li>\n';
+      expected += '</ul>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it(replaceDelimiters('should ignore non-text "attr-like" text after a "softbreak"', options), () => {
+      src = '- item\n*{.blue}*';
+      expected = '<ul>\n';
+      expected += '<li>item\n<em>{.blue}</em></li>\n';
+      expected += '</ul>\n';
+      assert.equal(md.render(src), expected);
+    });
+
     it(replaceDelimiters('should work with ordered lists', options), () => {
       src = '1. item\n{.blue}';
       expected = '<ol class="blue">\n';
