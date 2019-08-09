@@ -219,6 +219,7 @@ module.exports = options => {
           children: [
             {
               position: -1,
+              type: 'text',
               content: utils.hasDelimiters('end', options)
             }
           ]
