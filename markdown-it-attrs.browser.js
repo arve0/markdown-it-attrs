@@ -377,6 +377,7 @@ module.exports = function (options) {
         type: 'softbreak'
       }, {
         position: -1,
+        type: 'text',
         content: utils.hasDelimiters('only', options)
       }]
     }],
@@ -444,6 +445,7 @@ module.exports = function (options) {
       type: 'inline',
       children: [{
         position: -1,
+        type: 'text',
         content: utils.hasDelimiters('end', options)
       }]
     }],
