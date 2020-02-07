@@ -49,6 +49,16 @@ Output:
 <p css-module="green">Use the css-module green on this paragraph.</p>
 ```
 
+Also works with spans, in combination with the [markdown-it-bracketed-spans](https://github.com/mb21/markdown-it-bracketed-spans) plugin (to be installed and loaded as such then):
+
+```md
+paragraph with [a style me span]{.red}
+```
+
+Output:
+```html
+<p>paragraph with <span class="red">a style me span</span></p>
+```
 
 ## Install
 
