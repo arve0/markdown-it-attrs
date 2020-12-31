@@ -272,6 +272,7 @@ function describeTestsWithOptions(options, postText) {
       src = '| h1 | h2 |\n';
       src += '| -- | -- |\n';
       src += '| c1 | c1 |\n';
+      src += '\n';
       src += '{.c}';
       expected = '<table class="c">\n';
       expected += '<thead>\n';
