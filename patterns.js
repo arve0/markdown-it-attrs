@@ -75,6 +75,7 @@ module.exports = options => {
        * | h1 |
        * | -- |
        * | c1 |
+       *
        * {.c}
        */
       name: 'tables',

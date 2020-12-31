@@ -174,6 +174,33 @@ Output:
 
 This is not optimal, but what I can do at the momemnt. For further discussion, see https://github.com/arve0/markdown-it-attrs/issues/32.
 
+Similar for tables, attributes must be _two_ new lines below:
+```md
+header1 | header2
+------- | -------
+column1 | column2
+
+{.special}
+```
+
+Output:
+```html
+<table class="special">
+  <thead>
+    <tr>
+      <th>header1</th>
+      <th>header2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>column1</td>
+      <td>column2</td>
+    </tr>
+  </tbody>
+</table>
+```
+
 If you need finer control, [decorate](https://github.com/rstacruz/markdown-it-decorate) might help you.
 
 ## Custom rendering
