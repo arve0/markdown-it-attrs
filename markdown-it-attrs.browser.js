@@ -684,15 +684,17 @@ exports.getAttrs = function (str, start, options) {
 
 
 exports.addAttrs = function (attrs, token) {
-  for (var j = 0, l = attrs.length; j < l; ++j) {
-    var key = attrs[j][0];
+  if (token) {
+    for (var j = 0, l = attrs.length; j < l; ++j) {
+      var key = attrs[j][0];
 
-    if (key === 'class') {
-      token.attrJoin('class', attrs[j][1]);
-    } else if (key === 'css-module') {
-      token.attrJoin('css-module', attrs[j][1]);
-    } else {
-      token.attrPush(attrs[j]);
+      if (key === 'class') {
+        token.attrJoin('class', attrs[j][1]);
+      } else if (key === 'css-module') {
+        token.attrJoin('css-module', attrs[j][1]);
+      } else {
+        token.attrPush(attrs[j]);
+      }
     }
   }
 
