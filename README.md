@@ -60,6 +60,23 @@ Output:
 <p>paragraph with <span class="red">a style me span</span></p>
 ```
 
+Attribute definition lists supports inheritance based on [kramdown Syntax](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions). `id` attributes are not included.
+
+They require to be preceded and followed by an empty line and other content inside these blocks will not be parsed. `id` attributes are not included:
+
+```md
+{ald: #someid .someclass attr="allowed"}
+{anotherald: someald #anotherid .anotherclass anotherattr="allowed"}
+
+another text
+{anotherald}
+```
+
+Output:
+```html
+<p class="someclass anotherclass" attr="allowed" id="anotherid" anotherattr="allowed">another text</p>
+```
+
 ## Install
 
 ```
