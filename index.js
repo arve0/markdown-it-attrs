@@ -1,6 +1,7 @@
 'use strict';
 
 const patternsConfig = require('./patterns.js');
+const utils = require('./utils.js');
 
 const defaultOptions = {
   leftDelimiter: '{',
@@ -16,6 +17,8 @@ module.exports = function attributes(md, options_) {
 
   function curlyAttrs(state) {
     let tokens = state.tokens;
+    // clean ALDs for each document
+    utils.attributeListDefintions.clear();
 
     for (let i = 0; i < tokens.length; i++) {
       for (let p = 0; p < patterns.length; p++) {

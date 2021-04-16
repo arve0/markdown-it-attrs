@@ -381,6 +381,31 @@ function describeTestsWithOptions(options, postText) {
       expected = '<p class="someclass" attr="allowed">text</p>\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
+
+    it('should support attribute list definitions', () => {
+      src = '{someald: #someid .someclass attr="allowed"}\n\n';
+      src += 'some text\n';
+      src += '{someald}';
+      expected = '<p id="someid" class="someclass" attr="allowed">some text</p>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it('should support single attribute list definitions and references', () => {
+      src = '{someald: #someid .someclass attr="allowed"}\n\n';
+      src += 'some text\n';
+      src += '{someald}';
+      expected = '<p id="someid" class="someclass" attr="allowed">some text</p>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it('should support multiple attribute list definitions with inheritance and references', () => {
+      src = '{someald: #someid .someclass attr="allowed"}\n';
+      src += '{anotherald: someald #anotherid .anotherclass anotherattr="allowed"}\n\n';
+      src += 'another text\n';
+      src += '{anotherald}';
+      expected = '<p class="someclass anotherclass" attr="allowed" id="anotherid" anotherattr="allowed">another text</p>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
   });
 }
 
