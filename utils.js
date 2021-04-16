@@ -1,4 +1,8 @@
 'use strict';
+
+const attributeListDefintions = new Map();
+exports.attributeListDefintions = attributeListDefintions;
+
 /**
  * parse {.class #id key=val} strings
  * @param {string} str: string to parse
@@ -12,6 +16,7 @@ exports.getAttrs = function (str, start, options) {
   const keySeparator = '=';
   const classChar = '.';
   const idChar = '#';
+  const attributeListReferenceChar = ':';
 
   const attrs = [];
   let key = '';
@@ -24,7 +29,15 @@ exports.getAttrs = function (str, start, options) {
   // breaks when } is found or end of string
   for (let i = start + options.leftDelimiter.length; i < str.length; i++) {
     if (str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
-      if (key !== '') { attrs.push([key, value]); }
+      if (key !== '') {
+        if (attributeListDefintions.has(key)
+          && value === ''
+          && !['css-module', 'class', 'id'].includes(key)) {
+          attrs.push(['attributeListReference', key]);
+        } else {
+          attrs.push([key, value]);
+        }
+      }
       break;
     }
     let char_ = str.charAt(i);
@@ -70,7 +83,23 @@ exports.getAttrs = function (str, start, options) {
         // beginning or ending space: { .red } vs {.red}
         continue;
       }
-      attrs.push([key, value]);
+      
+      if (key.slice(-1) === attributeListReferenceChar) {
+        value = key.slice(0,-1);
+        key = 'attributeListDefinition';        
+      } 
+      
+      if (value === '' && attributeListDefintions.has(key)) {
+        // attribute list definition import
+        for (const attr of attributeListDefintions.get(key)) {
+          if (attr[0] !== 'id') {
+            attrs.push(attr);
+          }
+        }
+      } else {
+        attrs.push([key, value]);
+      }
+
       key = '';
       value = '';
       parsingKey = true;
@@ -96,7 +125,7 @@ exports.getAttrs = function (str, start, options) {
     return attrs.filter(function (attrPair) {
       let attr = attrPair[0];
 
-      function isAllowedAttribute (allowedAttribute) {
+      function isAllowedAttribute(allowedAttribute) {
         return (attr === allowedAttribute
           || (allowedAttribute instanceof RegExp && allowedAttribute.test(attr))
         );
@@ -123,6 +152,10 @@ exports.addAttrs = function (attrs, token) {
       token.attrJoin('class', attrs[j][1]);
     } else if (key === 'css-module') {
       token.attrJoin('css-module', attrs[j][1]);
+    } else if (key === 'attributeListReference') { 
+      if (attributeListDefintions.has(attrs[j][1])) {
+        exports.addAttrs(attributeListDefintions.get(attrs[j][1]), token);
+      }
     } else {
       token.attrPush(attrs[j]);
     }
@@ -223,7 +256,7 @@ exports.removeDelimiter = function (str, options) {
  * @param {string} s Regex string.
  * @return {string} Escaped string.
  */
-function escapeRegExp (s) {
+function escapeRegExp(s) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 exports.escapeRegExp = escapeRegExp;

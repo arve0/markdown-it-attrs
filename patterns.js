@@ -12,7 +12,45 @@ module.exports = options => {
                           + '[^' + utils.escapeRegExp(options.rightDelimiter) + ']');
 
   return ([
+    /**
+     * {ald1 #id1 .class1 attr1="value1"}
+     * {ald2 #id2 .class2 attr2="value2"}
+     * ...
+     * 
+    */
     {
+      name: 'attribute list definitions',
+      tests: [
+        { 
+          shift: 0,
+          block: true,
+          content: utils.hasDelimiters('only', options)
+        }
+      ],
+      transform: (tokens, i) => {
+        const token = tokens[i];
+
+        const hasDelimiters = utils.hasDelimiters('only', options);
+        let hasAlds = false;
+
+        for (const child of token.children) {
+          if (child.type === 'text' && hasDelimiters(child.content)) {
+            const childStart =
+              child.content.lastIndexOf(options.leftDelimiter);
+            const attrs = utils.getAttrs(child.content, childStart, options);
+            if (attrs.length && attrs[0][0] === 'attributeListDefinition') {
+              utils.attributeListDefintions.set(attrs[0][1], attrs.slice(1));
+              hasAlds = true;
+            }
+          }
+        }
+
+        if (hasAlds) {
+          // remove surrounding paragraph
+          tokens.splice(i - 1, 3);
+        }
+      }
+    }, {
       /**
        * ```python {.cls}
        * for i in range(10):
