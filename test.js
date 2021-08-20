@@ -262,6 +262,12 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    it(replaceDelimiters('should support containers with default delimiter', options), () => {
+      src = ':::info {.c a=1 #ii}\nWell, hello!\n:::';
+      expected = '<div class="info c" a="1" id="ii">Well, hello!</div>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+    
     it(replaceDelimiters('should support blockquotes', options), () => {
       src = '> quote\n{.c}';
       expected = '<blockquote class="c">\n<p>quote</p>\n</blockquote>\n';
