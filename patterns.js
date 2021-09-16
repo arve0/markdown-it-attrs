@@ -313,7 +313,7 @@ module.exports = options => {
             {
               position: -1,
               content: utils.hasDelimiters('end', options),
-              type: (t) => t !== 'code_inline'
+              type: (t) => t !== 'code_inline' && t !== 'math_inline'
             }
           ]
         }

@@ -45,6 +45,7 @@
     "eslint": "^5.16.0",
     "markdown-it": "^12.0.2",
     "markdown-it-implicit-figures": "^0.9.0",
+    "markdown-it-katex": "^2.0.3",
     "mocha": "^7.1.1",
     "nyc": "^14.1.1"
   },
