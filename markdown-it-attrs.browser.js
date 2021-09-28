@@ -534,7 +534,7 @@ module.exports = function (options) {
         position: -1,
         content: utils.hasDelimiters('end', options),
         type: function type(t) {
-          return t !== 'code_inline';
+          return t !== 'code_inline' && t !== 'math_inline';
         }
       }]
     }],
