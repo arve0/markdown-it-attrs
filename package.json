@@ -35,19 +35,18 @@
     "pandoc",
     "header_attributes"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
     "babelify": "^10.0.0",
     "browserify": "^16.5.2",
     "coveralls": "^3.1.1",
-    "eslint": "^5.16.0",
+    "eslint": "^8.4.1",
     "markdown-it": "^12.2.0",
     "markdown-it-implicit-figures": "^0.9.0",
     "markdown-it-katex": "^2.0.3",
-    "mocha": "^7.2.0",
-    "nyc": "^14.1.1"
+    "mocha": "^9.1.3",
+    "nyc": "^15.1.0"
   },
   "peerDependencies": {
     "markdown-it": ">= 9.0.0 < 13.0.0"
