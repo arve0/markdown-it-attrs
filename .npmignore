@@ -1,2 +1,9 @@
-test.js
-bower.json
+/test.js
+/bower.json
+/.vscode
+/.nyc_output
+/ISSUE_TEMPLATE.md
+/.travis.yml
+/.eslintignore
+/.eslintrc.js
+/.editorconfig
