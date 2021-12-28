@@ -296,7 +296,8 @@ module.exports = options => {
         token.nesting = 0;
         let content = tokens[i + 1].content;
         let start = content.lastIndexOf(options.leftDelimiter);
-        token.attrs = utils.getAttrs(content, start, options);
+        let attrs = utils.getAttrs(content, start, options);
+        utils.addAttrs(attrs, token);
         token.markup = content;
         tokens.splice(i + 1, 2);
       }
