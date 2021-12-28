@@ -389,6 +389,12 @@ function describeTestsWithOptions(options, postText) {
       expected = '<p class="someclass" attr="allowed">text</p>\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
+
+    it(replaceDelimiters('should support multiple classes for <hr>', options), () => {
+      src = '--- {.a .b}';
+      expected = '<hr class="a b">\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
   });
 }
 
