@@ -1,7 +1,21 @@
-# markdown-it-attrs [![Build Status](https://travis-ci.org/arve0/markdown-it-attrs.svg?branch=master)](https://travis-ci.org/arve0/markdown-it-attrs) [![npm version](https://badge.fury.io/js/markdown-it-attrs.svg)](http://badge.fury.io/js/markdown-it-attrs) [![Coverage Status](https://coveralls.io/repos/github/arve0/markdown-it-attrs/badge.svg?branch=master)](https://coveralls.io/github/arve0/markdown-it-attrs?branch=master)
+# markdown-it-attrs [![Build Status](https://travis-ci.org/arve0/markdown-it-attrs.svg?branch=master)](https://travis-ci.org/arve0/markdown-it-attrs) [![npm version](https://badge.fury.io/js/markdown-it-attrs.svg)](http://badge.fury.io/js/markdown-it-attrs) [![Coverage Status](https://coveralls.io/repos/github/arve0/markdown-it-attrs/badge.svg?branch=master)](https://coveralls.io/github/arve0/markdown-it-attrs?branch=master) <!-- omit in toc -->
 
 Add classes, identifiers and attributes to your markdown with `{.class #identifier attr=value attr2="spaced value"}` curly brackets, similar to [pandoc's header attributes](http://pandoc.org/README.html#extension-header_attributes).
 
+# Table of contents <!-- omit in toc -->
+- [Examples](#examples)
+- [Install](#install)
+- [Support](#support)
+- [Usage](#usage)
+- [Security](#security)
+- [Limitations](#limitations)
+- [Ambiguity](#ambiguity)
+- [Custom rendering](#custom-rendering)
+- [Custom blocks](#custom-blocks)
+- [Custom delimiters](#custom-delimiters)
+- [Development](#development)
+- [License](#license)
+## Examples
 Example input:
 ```md
 # header {.style-me}
@@ -66,6 +80,15 @@ Output:
 $ npm install --save markdown-it-attrs
 ```
 
+## Support
+Library is considered done from my part. I'm maintaining it with bug fixes and
+security updates.
+
+I'll approve pull requests that are easy to understand. Generally not willing
+merge pull requests that increase maintainance complexity. Feel free to open
+anyhow and I'll give my feedback.
+
+If you need some extra features, I'm available for hire.
 
 ## Usage
 
@@ -112,6 +135,32 @@ text {#red .green regex=allowed onclick=alert('hello')}
 Output:
 ```html
 <p id="red" class="green" regex="allowed">text</p>
+```
+
+## Limitations
+markdown-it-attrs relies on markdown parsing in markdown-it, which means some
+special cases are not possible to fix. Like using `_` outside and inside
+attributes:
+
+```md
+_i want [all of this](/link){target="_blank"} to be italics_
+```
+
+Above example will render to:
+```html
+<p>_i want <a href="/link">all of this</a>{target=&quot;<em>blank&quot;} to be italics</em></p>
+```
+
+...which is probably not what you wanted. Of course, you could use `*` for
+italics to solve this parsing issue:
+
+```md
+*i want [all of this](/link){target="_blank"} to be italics*
+```
+
+Output:
+```html
+<p><em>i want <a href="/link" target="_blank">all of this</a> to be italics</em></p>
 ```
 
 ## Ambiguity
@@ -266,6 +315,31 @@ as
 ```html
 <h1 class="large">title</h1>
 ```
+
+## Development
+Tests are in [test.js](./test.js).
+
+Run all tests:
+```sh
+npm test
+```
+
+Run particular test:
+```sh
+npm test -- -g "not crash"
+```
+
+In tests, use helper function `replaceDelimiters` to make test run with
+different delimiters (`{}`, `[]` and `[[]]`).
+
+For easy access to HTML output you can use [debug.js](./debug.js):
+
+```sh
+node debug.js # will print HTML output
+```
+
+Please do **not** submit pull requests with changes in package version or built
+files like browser.js.
 
 ## License
 
