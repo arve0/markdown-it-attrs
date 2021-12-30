@@ -390,9 +390,15 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
-    it(replaceDelimiters('should support multiple classes for <hr>', options), () => {
+    it('should support multiple classes for <hr>', () => {
       src = '--- {.a .b}';
       expected = '<hr class="a b">\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it(replaceDelimiters('should not crash on {#ids} in front of list items', options), () => {
+      src = '- {#ids} [link](./link)';
+      expected = replaceDelimiters('<ul>\n<li>{#ids} <a href="./link">link</a></li>\n</ul>\n', options);
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
   });

@@ -57,6 +57,12 @@ function test(tokens, i, t) {
   let ii = t.shift !== undefined
     ? i + t.shift
     : t.position;
+
+  if (t.shift !== undefined && ii < 0) {
+    // we should never shift to negative indexes (rolling around to back of array)
+    return res;
+  }
+
   let token = get(tokens, ii);  // supports negative ii
 
 
