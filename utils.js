@@ -250,6 +250,8 @@ exports.getMatchingOpeningToken = function (tokens, i) {
       return tokens[i];
     }
   }
+
+  return false;
 };
 
 

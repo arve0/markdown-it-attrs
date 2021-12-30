@@ -33,6 +33,7 @@
         "prefer-const": "error",
         "no-else-return": "error",
         "default-case": "error",
+        "consistent-return": "error",
         "no-restricted-syntax": [
             "error",
             {
