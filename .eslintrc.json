@@ -6,7 +6,7 @@
     "globals": {
       "char": false
     },
-    "extends": "eslint:recommended",
+    "extends": [ "eslint:recommended" ],
     "rules": {
         "indent": [
             "error",
@@ -29,6 +29,16 @@
           "error",
           { "builtinGlobals": true }
         ],
-        "no-var": "error"
+        "no-var": "error",
+        "prefer-const": "error",
+        "no-else-return": "error",
+        "default-case": "error",
+        "no-restricted-syntax": [
+            "error",
+            {
+                "selector": "ForInStatement",
+                "message": "for..in loops iterate over the entire prototype chain. Use Object.{keys,values,entries}."
+            }
+        ]
     }
 }

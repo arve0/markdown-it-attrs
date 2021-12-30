@@ -15,14 +15,14 @@ module.exports = function attributes(md, options_) {
   const patterns = patternsConfig(options);
 
   function curlyAttrs(state) {
-    let tokens = state.tokens;
+    const tokens = state.tokens;
 
     for (let i = 0; i < tokens.length; i++) {
       for (let p = 0; p < patterns.length; p++) {
-        let pattern = patterns[p];
+        const pattern = patterns[p];
         let j = null; // position of child with offset 0
-        let match = pattern.tests.every(t => {
-          let res = test(tokens, i, t);
+        const match = pattern.tests.every(t => {
+          const res = test(tokens, i, t);
           if (res.j !== null) { j = res.j; }
           return res.match;
         });
@@ -49,12 +49,12 @@ module.exports = function attributes(md, options_) {
  * @return {object} { match: true|false, j: null|number }
  */
 function test(tokens, i, t) {
-  let res = {
+  const res = {
     match: false,
     j: null  // position of child
   };
 
-  let ii = t.shift !== undefined
+  const ii = t.shift !== undefined
     ? i + t.shift
     : t.position;
 
@@ -63,12 +63,12 @@ function test(tokens, i, t) {
     return res;
   }
 
-  let token = get(tokens, ii);  // supports negative ii
+  const token = get(tokens, ii);  // supports negative ii
 
 
   if (token === undefined) { return res; }
 
-  for (let key in t) {
+  for (const key of Object.keys(t)) {
     if (key === 'shift' || key === 'position') { continue; }
 
     if (token[key] === undefined) { return res; }
@@ -78,14 +78,14 @@ function test(tokens, i, t) {
         return res;
       }
       let match;
-      let childTests = t.children;
-      let children = token.children;
+      const childTests = t.children;
+      const children = token.children;
       if (childTests.every(tt => tt.position !== undefined)) {
         // positions instead of shifts, do not loop all children
         match = childTests.every(tt => test(children, tt.position, tt).match);
         if (match) {
           // we may need position of child in transform
-          let j = last(childTests).position;
+          const j = last(childTests).position;
           res.j = j >= 0 ? j : children.length + j;
         }
       } else {
@@ -115,7 +115,7 @@ function test(tokens, i, t) {
       break;
     case 'object':
       if (isArrayOfFunctions(t[key])) {
-        let r = t[key].every(tt => tt(token[key]));
+        const r = t[key].every(tt => tt(token[key]));
         if (r === false) { return res; }
         break;
       }

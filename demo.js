@@ -1,5 +1,5 @@
-let md = require('markdown-it')();
-let markdownItAttrs = require('markdown-it-attrs');
+const md = require('markdown-it')();
+const markdownItAttrs = require('markdown-it-attrs');
 
 md.use(markdownItAttrs);
 

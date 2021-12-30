@@ -28,9 +28,9 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i) => {
-        let token = tokens[i];
-        let start = token.info.lastIndexOf(options.leftDelimiter);
-        let attrs = utils.getAttrs(token.info, start, options);
+        const token = tokens[i];
+        const start = token.info.lastIndexOf(options.leftDelimiter);
+        const attrs = utils.getAttrs(token.info, start, options);
         utils.addAttrs(attrs, token);
         token.info = utils.removeDelimiter(token.info, options);
       }
@@ -59,10 +59,10 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i, j) => {
-        let token = tokens[i].children[j];
-        let endChar = token.content.indexOf(options.rightDelimiter);
-        let attrToken = tokens[i].children[j - 1];
-        let attrs = utils.getAttrs(token.content, 0, options);
+        const token = tokens[i].children[j];
+        const endChar = token.content.indexOf(options.rightDelimiter);
+        const attrToken = tokens[i].children[j - 1];
+        const attrs = utils.getAttrs(token.content, 0, options);
         utils.addAttrs(attrs, attrToken);
         if (token.content.length === (endChar + options.rightDelimiter.length)) {
           tokens[i].children.splice(j, 1);
@@ -95,9 +95,9 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i) => {
-        let token = tokens[i + 2];
-        let tableOpen = utils.getMatchingOpeningToken(tokens, i);
-        let attrs = utils.getAttrs(token.content, 0, options);
+        const token = tokens[i + 2];
+        const tableOpen = utils.getMatchingOpeningToken(tokens, i);
+        const attrs = utils.getAttrs(token.content, 0, options);
         // add attributes
         utils.addAttrs(attrs, tableOpen);
         // remove <p>{.c}</p>
@@ -125,10 +125,10 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i, j) => {
-        let token = tokens[i].children[j];
-        let content = token.content;
-        let attrs = utils.getAttrs(content, 0, options);
-        let openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
+        const token = tokens[i].children[j];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, 0, options);
+        const openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
         utils.addAttrs(attrs, openingToken);
         token.content = content.slice(content.indexOf(options.rightDelimiter) + options.rightDelimiter.length);
       }
@@ -158,9 +158,9 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i, j) => {
-        let token = tokens[i].children[j];
-        let content = token.content;
-        let attrs = utils.getAttrs(content, 0, options);
+        const token = tokens[i].children[j];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, 0, options);
         let ii = i - 2;
         while (tokens[ii - 1] &&
           tokens[ii - 1].type !== 'ordered_list_open' &&
@@ -199,10 +199,10 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i) => {
-        let token = tokens[i + 2];
-        let content = token.content;
-        let attrs = utils.getAttrs(content, 0, options);
-        let openingToken = utils.getMatchingOpeningToken(tokens, i);
+        const token = tokens[i + 2];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, 0, options);
+        const openingToken = utils.getMatchingOpeningToken(tokens, i);
         utils.addAttrs(attrs, openingToken);
         tokens.splice(i + 1, 3);
       }
@@ -228,11 +228,11 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i, j) => {
-        let token = tokens[i].children[j];
-        let content = token.content;
-        let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
+        const token = tokens[i].children[j];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
         utils.addAttrs(attrs, tokens[i - 2]);
-        let trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
+        const trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
         token.content = last(trimmed) !== ' ' ?
           trimmed : trimmed.slice(0, -1);
       }
@@ -259,12 +259,12 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i, j) => {
-        let token = tokens[i].children[j];
-        let attrs = utils.getAttrs(token.content, 0, options);
+        const token = tokens[i].children[j];
+        const attrs = utils.getAttrs(token.content, 0, options);
         // find last closing tag
         let ii = i + 1;
         while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
-        let openingToken = utils.getMatchingOpeningToken(tokens, ii);
+        const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
         tokens[i].children = tokens[i].children.slice(0, -2);
       }
@@ -290,13 +290,13 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i) => {
-        let token = tokens[i];
+        const token = tokens[i];
         token.type = 'hr';
         token.tag = 'hr';
         token.nesting = 0;
-        let content = tokens[i + 1].content;
-        let start = content.lastIndexOf(options.leftDelimiter);
-        let attrs = utils.getAttrs(content, start, options);
+        const content = tokens[i + 1].content;
+        const start = content.lastIndexOf(options.leftDelimiter);
+        const attrs = utils.getAttrs(content, start, options);
         utils.addAttrs(attrs, token);
         token.markup = content;
         tokens.splice(i + 1, 2);
@@ -320,14 +320,14 @@ module.exports = options => {
         }
       ],
       transform: (tokens, i, j) => {
-        let token = tokens[i].children[j];
-        let content = token.content;
-        let attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
+        const token = tokens[i].children[j];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
         let ii = i + 1;
         while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
-        let openingToken = utils.getMatchingOpeningToken(tokens, ii);
+        const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
-        let trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
+        const trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
         token.content = last(trimmed) !== ' ' ?
           trimmed : trimmed.slice(0, -1);
       }

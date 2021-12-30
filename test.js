@@ -37,16 +37,16 @@ describe('markdown-it-attrs', () => {
 function describeTestsWithOptions(options, postText) {
   describe('markdown-it-attrs.utils' + postText, () => {
     it(replaceDelimiters('should parse {.class ..css-module #id key=val .class.with.dot}', options), () => {
-      let src = '{.red ..mod #head key=val .class.with.dot}';
-      let expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val'], ['class', 'class.with.dot']];
-      let res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
+      const src = '{.red ..mod #head key=val .class.with.dot}';
+      const expected = [['class', 'red'], ['css-module', 'mod'], ['id', 'head'], ['key', 'val'], ['class', 'class.with.dot']];
+      const res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
       assert.deepEqual(res, expected);
     });
 
     it(replaceDelimiters('should parse attributes with = {attr=/id=1}', options), () => {
-      let src = '{link=/some/page/in/app/id=1}';
-      let expected = [['link', '/some/page/in/app/id=1']];
-      let res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
+      const src = '{link=/some/page/in/app/id=1}';
+      const expected = [['link', '/some/page/in/app/id=1']];
+      const res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
       assert.deepEqual(res, expected);
     });
   });
@@ -247,7 +247,7 @@ function describeTestsWithOptions(options, postText) {
     it(replaceDelimiters('should work with typography enabled', options), () => {
       src = 'text {key="val with spaces"}';
       expected = '<p key="val with spaces">text</p>\n';
-      let res = md.set({ typographer: true }).render(replaceDelimiters(src, options));
+      const res = md.set({ typographer: true }).render(replaceDelimiters(src, options));
       assert.equal(res, expected);
     });
 
