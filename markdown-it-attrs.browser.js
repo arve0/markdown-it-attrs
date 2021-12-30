@@ -513,7 +513,8 @@ module.exports = function (options) {
       token.nesting = 0;
       var content = tokens[i + 1].content;
       var start = content.lastIndexOf(options.leftDelimiter);
-      token.attrs = utils.getAttrs(content, start, options);
+      var attrs = utils.getAttrs(content, start, options);
+      utils.addAttrs(attrs, token);
       token.markup = content;
       tokens.splice(i + 1, 2);
     }
