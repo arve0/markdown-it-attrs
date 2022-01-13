@@ -133,17 +133,16 @@ exports.addAttrs = function (attrs, token) {
  * Does string have properly formatted curly?
  *
  * start: '{.a} asdf'
- * middle: 'a{.b}c'
  * end: 'asdf {.a}'
  * only: '{.a}'
  *
- * @param {string} where to expect {} curly. start, middle, end or only.
+ * @param {string} where to expect {} curly. start, end or only.
  * @return {function(string)} Function which testes if string has curly.
  */
 exports.hasDelimiters = function (where, options) {
 
   if (!where) {
-    throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');
+    throw new Error('Parameter `where` not passed. Should be "start", "end" or "only".');
   }
 
   /**
