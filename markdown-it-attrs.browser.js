@@ -81,7 +81,9 @@ function test(tokens, i, t) {
     return res;
   }
 
-  var _loop2 = function _loop2(key) {
+  var _loop2 = function _loop2() {
+    var key = _Object$keys[_i];
+
     if (key === 'shift' || key === 'position') {
       return "continue";
     }
@@ -198,8 +200,8 @@ function test(tokens, i, t) {
     }
   };
 
-  for (var key in t) {
-    var _ret = _loop2(key);
+  for (var _i = 0, _Object$keys = Object.keys(t); _i < _Object$keys.length; _i++) {
+    var _ret = _loop2();
 
     if (_ret === "continue") continue;
     if (_typeof(_ret) === "object") return _ret.v;
@@ -564,14 +566,14 @@ function last(arr) {
 }
 
 },{"./utils.js":3}],3:[function(require,module,exports){
-'use strict';
+"use strict";
+
 /**
  * parse {.class #id key=val} strings
  * @param {string} str: string to parse
  * @param {int} start: where to start parsing (including {)
  * @returns {2d array}: [['key', 'val'], ['class', 'red']]
  */
-
 exports.getAttrs = function (str, start, options) {
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
   var allowedKeyChars = /[^\t\n\f />"'=]/;
@@ -673,9 +675,9 @@ exports.getAttrs = function (str, start, options) {
 
       return allowedAttributes.some(isAllowedAttribute);
     });
-  } else {
-    return attrs;
   }
+
+  return attrs;
 };
 /**
  * add attributes from [['key', 'val']] list
@@ -704,18 +706,17 @@ exports.addAttrs = function (attrs, token) {
  * Does string have properly formatted curly?
  *
  * start: '{.a} asdf'
- * middle: 'a{.b}c'
  * end: 'asdf {.a}'
  * only: '{.a}'
  *
- * @param {string} where to expect {} curly. start, middle, end or only.
+ * @param {string} where to expect {} curly. start, end or only.
  * @return {function(string)} Function which testes if string has curly.
  */
 
 
 exports.hasDelimiters = function (where, options) {
   if (!where) {
-    throw new Error('Parameter `where` not passed. Should be "start", "middle", "end" or "only".');
+    throw new Error('Parameter `where` not passed. Should be "start", "end" or "only".');
   }
   /**
    * @param {string} str
@@ -769,6 +770,9 @@ exports.hasDelimiters = function (where, options) {
         slice = str.slice(str.length - options.rightDelimiter.length);
         end = slice === options.rightDelimiter ? str.length - options.rightDelimiter.length : -1;
         break;
+
+      default:
+        throw new Error("Unexpected case ".concat(where, ", expected 'start', 'end' or 'only'"));
     }
 
     return start !== -1 && end !== -1 && validCurlyLength(str.substring(start, end + options.rightDelimiter.length));
@@ -822,6 +826,8 @@ exports.getMatchingOpeningToken = function (tokens, i) {
       return tokens[i];
     }
   }
+
+  return false;
 };
 /**
  * from https://github.com/markdown-it/markdown-it/blob/master/lib/common/utils.js
