@@ -626,7 +626,7 @@ exports.getAttrs = function (str, start, options) {
     } // {value="inside quotes"}
 
 
-    if (char_ === '"' && value === '') {
+    if (char_ === '"' && value === '' && !valueInsideQuotes) {
       valueInsideQuotes = true;
       continue;
     }
