@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-attrs",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "main": "index.js",
   "license": "MIT",
@@ -36,10 +36,10 @@
     "header_attributes"
   ],
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/preset-env": "^7.15.6",
+    "@babel/core": "^7.20.5",
+    "@babel/preset-env": "^7.20.2",
     "babelify": "^10.0.0",
-    "browserify": "^16.5.2",
+    "browserify": "^17.0.0",
     "coveralls": "^3.1.1",
     "eslint": "^8.4.1",
     "markdown-it": "^13.0.1",
