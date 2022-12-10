@@ -401,6 +401,12 @@ function describeTestsWithOptions(options, postText) {
       expected = replaceDelimiters('<ul>\n<li>{#ids} <a href="./link">link</a></li>\n</ul>\n', options);
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
+
+    it(replaceDelimiters('should support empty quoted attrs', options), () => {
+      src = '![](https://example.com/image.jpg){class="" height="100" width=""}';
+      expected = replaceDelimiters('<p><img src="https://example.com/image.jpg" alt="" class="" height="100" width=""></p>\n', options);
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
   });
 }
 
