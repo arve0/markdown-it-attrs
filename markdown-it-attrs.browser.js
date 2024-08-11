@@ -497,9 +497,11 @@ module.exports = function (options) {
       var content = token.content;
       var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
       var ii = i + 1;
-      while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) {
-        ii++;
-      }
+      do {
+        if (tokens[ii] && tokens[ii].nesting === -1) {
+          break;
+        }
+      } while (ii++ < tokens.length);
       var openingToken = utils.getMatchingOpeningToken(tokens, ii);
       utils.addAttrs(attrs, openingToken);
       var trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
