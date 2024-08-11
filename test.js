@@ -292,6 +292,34 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    it(replaceDelimiters('should apply attributes to the last column of tables', options), () => {
+      src = '| title | title {.title-primar} |\n';
+      src += '| :---: | :---: |\n';
+      src += '| text | text {.text-primar} |\n';
+      src += '| text {.text-primary} | text |\n';
+      src += '\n';
+      src += '{.c}';
+      expected = '<table class="c">\n';
+      expected += '<thead>\n';
+      expected += '<tr>\n';
+      expected += '<th style="text-align:center">title</th>\n';
+      expected += '<th style="text-align:center" class="title-primar">title</th>\n';
+      expected += '</tr>\n';
+      expected += '</thead>\n';
+      expected += '<tbody>\n';
+      expected += '<tr>\n';
+      expected += '<td style="text-align:center">text</td>\n';
+      expected += '<td style="text-align:center" class="text-primar">text</td>\n';
+      expected += '</tr>\n';
+      expected += '<tr>\n';
+      expected += '<td style="text-align:center" class="text-primary">text</td>\n';
+      expected += '<td style="text-align:center">text</td>\n';
+      expected += '</tr>\n';
+      expected += '</tbody>\n';
+      expected += '</table>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
     it(replaceDelimiters('should support nested lists', options), () => {
       src =  '- item\n';
       src += '  - nested\n';
