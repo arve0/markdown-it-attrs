@@ -6,4 +6,10 @@
 /.travis.yml
 /.eslintignore
 /.eslintrc.js
+/.eslintrc.json
 /.editorconfig
+/.gitignore
+/.github
+/.devcontainer
+/debug.js
+/demo.js
