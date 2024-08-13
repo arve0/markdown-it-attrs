@@ -49,6 +49,35 @@ function describeTestsWithOptions(options, postText) {
       const res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
       assert.deepEqual(res, expected);
     });
+
+    it(replaceDelimiters('should parse attributes whose are ignored the key chars(\\t,\\n,\\f,\\s,/,>,",\',=) eg: {gt>=true slash/=trace i\\td "q\\fnu e\'r\\ny"=}', options), () => {
+      const src = '{gt>=true slash/=trace i\td "q\fu\ne\'r\ny"=}';
+      const expected = [['gt', 'true'], ['slash', 'trace'], ['id', ''], ['query', '']];
+      const res = utils.getAttrs(replaceDelimiters(src, options), 0, options);
+      assert.deepEqual(res, expected);
+    });
+
+    it(replaceDelimiters('should throw an error while calling `hasDelimiters` with an invalid `where` param', options), () => {
+      assert.throws(() => utils.hasDelimiters(0, options), { name: 'Error', message: /Should be "start", "end" or "only"/ });
+      assert.throws(() => utils.hasDelimiters('', options), { name: 'Error', message: /Should be "start", "end" or "only"/ });
+      assert.throws(() => utils.hasDelimiters(null, options), { name: 'Error', message: /Should be "start", "end" or "only"/ });
+      assert.throws(() => utils.hasDelimiters(undefined, options), { name: 'Error', message: /Should be "start", "end" or "only"/ });
+      assert.throws(() => utils.hasDelimiters('center', options)('has {#test} delimiters'), { name: 'Error', message: /expected 'start', 'end' or 'only'/ });
+    });
+
+    it('should escape html entities(&,<,>,") eg: <a href="?a&b">TOC</a>', () => {
+      const src = '<a href="a&b">TOC</a>';
+      const expected = '&lt;a href=&quot;a&amp;b&quot;&gt;TOC&lt;/a&gt;';
+      const res = utils.escapeHtml(src);
+      assert.deepEqual(res, expected);
+    });
+
+    it('should keep the origional input which is not contains(&,<,>,") char(s) eg: |a|b|', () => {
+      const src = '|a|b|';
+      const expected = '|a|b|';
+      const res = utils.escapeHtml(src);
+      assert.deepEqual(res, expected);
+    });
   });
 
   describe('markdown-it-attrs' + postText, () => {

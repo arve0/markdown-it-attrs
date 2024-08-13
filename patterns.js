@@ -6,6 +6,10 @@
 
 const utils = require('./utils.js');
 
+/**
+ * @param {import('.').Options} options
+ * @returns {import('.').CurlyAttrsPattern[]}
+ */
 module.exports = options => {
   const __hr = new RegExp('^ {0,3}[-*_]{3,} ?'
                           + utils.escapeRegExp(options.leftDelimiter)
@@ -58,6 +62,9 @@ module.exports = options => {
           ]
         }
       ],
+      /**
+       * @param {!number} j
+       */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const endChar = token.content.indexOf(options.rightDelimiter);
@@ -124,6 +131,9 @@ module.exports = options => {
           ]
         }
       ],
+      /**
+       * @param {!number} j
+       */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const content = token.content;
@@ -157,6 +167,9 @@ module.exports = options => {
           ]
         }
       ],
+      /**
+       * @param {!number} j
+       */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const content = token.content;
@@ -227,6 +240,9 @@ module.exports = options => {
           ]
         }
       ],
+      /**
+       * @param {!number} j
+       */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const content = token.content;
@@ -258,6 +274,9 @@ module.exports = options => {
           ]
         }
       ],
+      /**
+       * @param {!number} j
+       */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const attrs = utils.getAttrs(token.content, 0, options);
@@ -319,6 +338,9 @@ module.exports = options => {
           ]
         }
       ],
+      /**
+       * @param {!number} j
+       */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const content = token.content;
