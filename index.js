@@ -12,8 +12,8 @@ const patternsConfig = require('./patterns.js');
  * @typedef {import('markdown-it/lib/token.mjs').Nesting} Nesting
  *
  * @typedef {Object} Options
- * @property {!string} leftDelimiter left delimiter, default is `{`(left basket)
- * @property {!string} rightDelimiter right delimiter, default is `}`(right basket)
+ * @property {!string} leftDelimiter left delimiter, default is `{`(left curly bracket)
+ * @property {!string} rightDelimiter right delimiter, default is `}`(right curly bracket)
  * @property {AllowedAttribute[]} allowedAttributes empty means no limit
  *
  * @typedef {string|RegExp} AllowedAttribute rule of allowed attribute
