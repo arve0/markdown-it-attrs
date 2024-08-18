@@ -349,6 +349,42 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    it(replaceDelimiters('should caculate table\'s colspan and/or rowspan', options), () => {
+      src = '| A | B | C | D |\n';
+      src += '| -- | -- | -- | -- |\n';
+      src += '| 1 | 11 | 111 | 1111 {rowspan=3} |\n';
+      src += '| 2 {colspan=2 rowspan=2} | 22 | 222 | 2222 |\n';
+      src += '| 3 | 33 | 333 | 3333 |\n';
+      src += '\n';
+      src += '{border=1}\n';
+      expected = '<table border="1">\n';
+      expected += '<thead>\n';
+      expected += '<tr>\n';
+      expected += '<th>A</th>\n';
+      expected += '<th>B</th>\n';
+      expected += '<th>C</th>\n';
+      expected += '<th>D</th>\n';
+      expected += '</tr>\n';
+      expected += '</thead>\n';
+      expected += '<tbody>\n';
+      expected += '<tr>\n';
+      expected += '<td>1</td>\n';
+      expected += '<td>11</td>\n';
+      expected += '<td>111</td>\n';
+      expected += '<td rowspan="3">1111</td>\n';
+      expected += '</tr>\n';
+      expected += '<tr>\n';
+      expected += '<td colspan="2" rowspan="2">2</td>\n';
+      expected += '<td>22</td>\n';
+      expected += '</tr>\n';
+      expected += '<tr>\n';
+      expected += '<td>3</td>\n';
+      expected += '</tr>\n';
+      expected += '</tbody>\n';
+      expected += '</table>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
     it(replaceDelimiters('should support nested lists', options), () => {
       src =  '- item\n';
       src += '  - nested\n';
