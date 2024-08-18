@@ -112,6 +112,142 @@ module.exports = options => {
       }
     }, {
       /**
+       * | A | B |
+       * | -- | -- |
+       * | 1 | 2 |
+       *
+       * | C | D |
+       * | -- | -- |
+       *
+       * only `| A | B |` sets the colsnum metadata
+       */
+      name: 'tables thead metadata',
+      tests: [
+        {
+          shift: 0,
+          type: 'tr_close',
+        }, {
+          shift: 1,
+          type: 'thead_close'
+        }, {
+          shift: 2,
+          type: 'tbody_open'
+        }
+      ],
+      transform: (tokens, i) => {
+        const tr = utils.getMatchingOpeningToken(tokens, i);
+        const th = tokens[i - 1];
+        let colsnum = 0;
+        let n = i;
+        while (--n) {
+          if (tokens[n] === tr) {
+            tokens[n - 1].meta = Object.assign({}, tokens[n + 2].meta, { colsnum });
+            break;
+          }
+          colsnum += (tokens[n].level === th.level && tokens[n].type === th.type) >> 0;
+        }
+        tokens[i + 2].meta = Object.assign({}, tokens[i + 2].meta, { colsnum });
+      }
+    }, {
+      /**
+       * | A | B | C | D |
+       * | -- | -- | -- | -- |
+       * | 1 | 11 | 111 | 1111 {rowspan=3} |
+       * | 2 {colspan=2 rowspan=2} | 22 | 222 | 2222 |
+       * | 3 | 33 | 333 | 3333 |
+       */
+      name: 'tables tbody calculate',
+      tests: [
+        {
+          shift: 0,
+          type: 'tbody_close',
+          hidden: false
+        }
+      ],
+      /**
+       * @param {number} i index of the tbody ending
+       */
+      transform: (tokens, i) => {
+        /** index of the tbody beginning */
+        let idx = i - 2;
+        while (idx > 0 && 'tbody_open' !== tokens[--idx].type);
+
+        const calc = tokens[idx].meta ? tokens[idx].meta.colsnum >> 0 : 1;
+        if (calc < 2) { return; }
+
+        const level = tokens[i].level + 2;
+        for (let n = idx; n < i; n++) {
+          if (tokens[n].level > level) { continue; }
+
+          const token = tokens[n];
+          const rows = token.hidden ? 0 : token.attrGet('rowspan') >> 0;
+          const cols = token.hidden ? 0 : token.attrGet('colspan') >> 0;
+
+          if (rows > 1) {
+            let colsnum = calc - (cols > 0 ? cols : 1);
+            for (let k = n, num = rows; k < i, num > 1; k++) {
+              if ('tr_open' == tokens[k].type) {
+                tokens[k].meta = Object.assign({}, tokens[k].meta);
+                if (tokens[k].meta && tokens[k].meta.colsnum) {
+                  colsnum -= 1;
+                }
+                tokens[k].meta.colsnum = colsnum;
+                num--;
+              }
+            }
+          }
+
+          if ('tr_open' == token.type && token.meta && token.meta.colsnum) {
+            const max = token.meta.colsnum;
+            for (let k = n, num = 0; k < i; k++) {
+              if ('td_open' == tokens[k].type) {
+                num += 1;
+              } else if ('tr_close' == tokens[k].type) {
+                break;
+              }
+              num > max && (tokens[k].hidden || hidden(tokens[k]));
+            }
+          }
+
+          if (cols > 1) {
+            /** @type {number[]} index of one row's children */
+            const one = [];
+            /** last index of the row's children */
+            let end = n + 3;
+            /** number of the row's children */
+            let num = calc;
+
+            for (let k = n; k > idx; k--) {
+              if ('tr_open' == tokens[k].type) {
+                num = tokens[k].meta && tokens[k].meta.colsnum || num;
+                break;
+              } else if ('td_open' === tokens[k].type) {
+                one.unshift(k);
+              }
+            }
+
+            for (let k = n; k < i; k++) {
+              if ('tr_close' == tokens[k].type) {
+                end = k;
+                break;
+              } else if ('td_open' == tokens[k].type) {
+                k > idx && one.push(k);
+              }
+            }
+
+            const off = one.indexOf(idx);
+            let real = num - off;
+            real = real > cols ? cols : real;
+            cols > real && token.attrSet('colspan', real + '');
+
+            for (let k = one.slice(num + 1 - calc - real)[0]; k < end; k++) {
+              tokens[k].hidden || hidden(tokens[k]);
+            }
+          }
+        }
+      }
+    }, {
+      /**
        * *emphasis*{.with attrs=1}
        */
       name: 'inline attributes',
@@ -360,4 +496,20 @@ module.exports = options => {
 // get last element of array or string
 function last(arr) {
   return arr.slice(-1)[0];
+}
+
+/**
+ * Hidden table's cells and them inline children,
+ * specially cast inline's content as empty
+ * to prevent that escapes the table's box model
+ * @see https://github.com/markdown-it/markdown-it/issues/639
+ * @param {import('.').Token} token
+ */
+function hidden(token) {
+  token.hidden = true;
+  token.children && token.children.forEach(t => (
+    t.content = '',
+    hidden(t),
+    undefined
+  ));
 }
