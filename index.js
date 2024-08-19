@@ -2,18 +2,75 @@
 
 const patternsConfig = require('./patterns.js');
 
+/**
+ * @typedef {import('markdown-it')} MarkdownIt
+ *
+ * @typedef {import('markdown-it/lib/rules_core/state_core.mjs').default} StateCore
+ *
+ * @typedef {import('markdown-it/lib/token.mjs').default} Token
+ *
+ * @typedef {import('markdown-it/lib/token.mjs').Nesting} Nesting
+ *
+ * @typedef {Object} Options
+ * @property {!string} leftDelimiter left delimiter, default is `{`(left curly bracket)
+ * @property {!string} rightDelimiter right delimiter, default is `}`(right curly bracket)
+ * @property {AllowedAttribute[]} allowedAttributes empty means no limit
+ *
+ * @typedef {string|RegExp} AllowedAttribute rule of allowed attribute
+ *
+ * @typedef {[string, string]} AttributePair
+ *
+ * @typedef {[number, number]} SourceLineInfo
+ *
+ * @typedef {Object} CurlyAttrsPattern
+ * @property {string} name
+ * @property {DetectingRule[]} tests
+ * @property {(tokens: Token[], i: number, j?: number) => void} transform
+ *
+ * @typedef {Object} MatchedResult
+ * @property {boolean} match true means matched
+ * @property {number?} j postion index number of Array<{@link Token}>
+ *
+ * @typedef {(str: string) => boolean} DetectingStrRule
+ *
+ * @typedef {Object} DetectingRule rule for testing {@link Token}'s properties
+ * @property {number=} shift offset index number of Array<{@link Token}>
+ * @property {number=} position fixed index number of Array<{@link Token}>
+ * @property {(string | DetectingStrRule)=} type
+ * @property {(string | DetectingStrRule)=} tag
+ * @property {DetectingRule[]=} children
+ * @property {(string | DetectingStrRule)=} content
+ * @property {(string | DetectingStrRule)=} markup
+ * @property {(string | DetectingStrRule)=} info
+ * @property {Nesting=} nesting
+ * @property {number=} level
+ * @property {boolean=} block
+ * @property {boolean=} hidden
+ * @property {AttributePair[]=} attrs
+ * @property {SourceLineInfo[]=} map
+ * @property {any=} meta
+ */
+
+/** @type {Options} */
 const defaultOptions = {
   leftDelimiter: '{',
   rightDelimiter: '}',
   allowedAttributes: []
 };
 
+/**
+ * @param {MarkdownIt} md
+ * @param {Options=} options_
+ */
 module.exports = function attributes(md, options_) {
   let options = Object.assign({}, defaultOptions);
   options = Object.assign(options, options_);
 
   const patterns = patternsConfig(options);
 
+  /**
+   * @param {StateCore} state
+   */
   function curlyAttrs(state) {
     const tokens = state.tokens;
 
@@ -43,12 +100,13 @@ module.exports = function attributes(md, options_) {
 /**
  * Test if t matches token stream.
  *
- * @param {array} tokens
+ * @param {Token[]} tokens
  * @param {number} i
- * @param {object} t Test to match.
- * @return {object} { match: true|false, j: null|number }
+ * @param {DetectingRule} t
+ * @returns {MatchedResult}
  */
 function test(tokens, i, t) {
+  /** @type {MatchedResult} */
   const res = {
     match: false,
     j: null  // position of child
@@ -78,7 +136,9 @@ function test(tokens, i, t) {
         return res;
       }
       let match;
+      /** @type {DetectingRule[]} */
       const childTests = t.children;
+      /** @type {Token[]} */
       const children = token.children;
       if (childTests.every(tt => tt.position !== undefined)) {
         // positions instead of shifts, do not loop all children
@@ -141,14 +201,19 @@ function isArrayOfFunctions(arr) {
 /**
  * Get n item of array. Supports negative n, where -1 is last
  * element in array.
- * @param {array} arr
+ * @param {Token[]} arr
  * @param {number} n
+ * @returns {Token=}
  */
 function get(arr, n) {
   return n >= 0 ? arr[n] : arr[arr.length + n];
 }
 
-// get last element of array, safe - returns {} if not found
+/**
+ * get last element of array, safe - returns {} if not found
+ * @param {DetectingRule[]} arr
+ * @returns {DetectingRule}
+ */
 function last(arr) {
   return arr.slice(-1)[0] || {};
 }
