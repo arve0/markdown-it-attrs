@@ -375,7 +375,7 @@ function describeTestsWithOptions(options, postText) {
       src += '| -- | -- | -- | -- |\n';
       src += '| 1 {colspan=2}| 11 {colspan=3} | 111| 1111 |\n';
       src += '| 2 {rowspan=2} | 22 {colspan=2} | 222 | 2222 |\n';
-      src += '| 3 | 33 {colspan=2} | 333 | 3333 |\n';
+      src += '| 3 | 33 {colspan=4} | 333 | 3333 |\n';
       src += '\n';
       src += '{border=4}';
       expected = '<table border="1">\n';

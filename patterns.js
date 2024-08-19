@@ -172,7 +172,7 @@ module.exports = options => {
         let idx = i - 2;
         while (idx > 0 && 'tbody_open' !== tokens[--idx].type);
 
-        const calc = tokens[idx].meta ? tokens[idx].meta.colsnum >> 0 : 1;
+        const calc = tokens[idx].meta.colsnum >> 0;
         if (calc < 2) { return; }
 
         const level = tokens[i].level + 2;
@@ -226,16 +226,16 @@ module.exports = options => {
               }
             }
 
-            for (let k = n; k < i; k++) {
+            for (let k = n + 2; k < i; k++) {
               if ('tr_close' == tokens[k].type) {
                 end = k;
                 break;
               } else if ('td_open' == tokens[k].type) {
-                k > idx && one.push(k);
+                one.push(k);
               }
             }
 
-            const off = one.indexOf(idx);
+            const off = one.indexOf(n);
             let real = num - off;
             real = real > cols ? cols : real;
             cols > real && token.attrSet('colspan', real + '');
