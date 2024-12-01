@@ -1,4 +1,4 @@
-# markdown-it-attrs [![Build Status](https://travis-ci.org/arve0/markdown-it-attrs.svg?branch=master)](https://travis-ci.org/arve0/markdown-it-attrs) [![npm version](https://badge.fury.io/js/markdown-it-attrs.svg)](http://badge.fury.io/js/markdown-it-attrs) [![Coverage Status](https://coveralls.io/repos/github/arve0/markdown-it-attrs/badge.svg?branch=master)](https://coveralls.io/github/arve0/markdown-it-attrs?branch=master) <!-- omit in toc -->
+# markdown-it-attrs [![GitHub actions](https://github.com/arve0/markdown-it-attrs/workflows/ci/badge.svg)](https://github.com/arve0/markdown-it-attrs/actions) [![npm version](https://badge.fury.io/js/markdown-it-attrs.svg)](http://badge.fury.io/js/markdown-it-attrs) [![Coverage Status](https://coveralls.io/repos/github/arve0/markdown-it-attrs/badge.svg?branch=master)](https://coveralls.io/github/arve0/markdown-it-attrs?branch=master) <!-- omit in toc -->
 
 Add classes, identifiers and attributes to your markdown with `{.class #identifier attr=value attr2="spaced value"}` curly brackets, similar to [pandoc's header attributes](http://pandoc.org/README.html#extension-header_attributes).
 
@@ -245,6 +245,46 @@ Output:
     <tr>
       <td>column1</td>
       <td>column2</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+Wellformed the table's _rowspan_ and/or _colspan_ attributes, usage sample below:
+```md
+| A                       | B   | C   | D                |
+| ----------------------- | --- | --- | ---------------- |
+| 1                       | 11  | 111 | 1111 {rowspan=3} |
+| 2 {colspan=2 rowspan=2} | 22  | 222 | 2222             |
+| 3                       | 33  | 333 | 3333             |
+
+{border=1}
+```
+
+Output:
+```html
+<table border="1">
+  <thead>
+    <tr>
+      <th>A</th>
+      <th>B</th>
+      <th>C</th>
+      <th>D</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>11</td>
+      <td>111</td>
+      <td rowspan="3">1111</td>
+    </tr>
+    <tr>
+      <td colspan="2" rowspan="2">2</td>
+      <td>22</td>
+    </tr>
+    <tr>
+      <td>3</td>
     </tr>
   </tbody>
 </table>

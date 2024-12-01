@@ -1,8 +1,16 @@
 /**
+ * @typedef {import('.').Token} Token
+ * @typedef {import('.').Options} Options
+ * @typedef {import('.').AttributePair} AttributePair
+ * @typedef {import('.').AllowedAttribute} AllowedAttribute
+ * @typedef {import('.').DetectingStrRule} DetectingStrRule
+ */
+/**
  * parse {.class #id key=val} strings
  * @param {string} str: string to parse
- * @param {int} start: where to start parsing (including {)
- * @returns {2d array}: [['key', 'val'], ['class', 'red']]
+ * @param {number} start: where to start parsing (including {)
+ * @param {Options} options
+ * @returns {AttributePair[]}: [['key', 'val'], ['class', 'red']]
  */
 exports.getAttrs = function (str, start, options) {
   // not tab, line feed, form feed, space, solidus, greater than sign, quotation mark, apostrophe and equals sign
@@ -95,6 +103,9 @@ exports.getAttrs = function (str, start, options) {
     return attrs.filter(function (attrPair) {
       const attr = attrPair[0];
 
+      /**
+       * @param {AllowedAttribute} allowedAttribute
+       */
       function isAllowedAttribute (allowedAttribute) {
         return (attr === allowedAttribute
           || (allowedAttribute instanceof RegExp && allowedAttribute.test(attr))
@@ -111,8 +122,8 @@ exports.getAttrs = function (str, start, options) {
 
 /**
  * add attributes from [['key', 'val']] list
- * @param {array} attrs: [['key', 'val']]
- * @param {token} token: which token to add attributes
+ * @param {AttributePair[]} attrs: [['key', 'val']]
+ * @param {Token} token: which token to add attributes
  * @returns token
  */
 exports.addAttrs = function (attrs, token) {
@@ -136,8 +147,9 @@ exports.addAttrs = function (attrs, token) {
  * end: 'asdf {.a}'
  * only: '{.a}'
  *
- * @param {string} where to expect {} curly. start, end or only.
- * @return {function(string)} Function which testes if string has curly.
+ * @param {'start'|'end'|'only'} where to expect {} curly. start, end or only.
+ * @param {Options} options
+ * @return {DetectingStrRule} Function which testes if string has curly.
  */
 exports.hasDelimiters = function (where, options) {
 
@@ -156,6 +168,9 @@ exports.hasDelimiters = function (where, options) {
       return false;
     }
 
+    /**
+     * @param {string} curly
+     */
     function validCurlyLength (curly) {
       const isClass = curly.charAt(options.leftDelimiter.length) === '.';
       const isId = curly.charAt(options.leftDelimiter.length) === '#';
@@ -204,6 +219,8 @@ exports.hasDelimiters = function (where, options) {
 
 /**
  * Removes last curly from string.
+ * @param {string} str
+ * @param {Options} options
  */
 exports.removeDelimiter = function (str, options) {
   const start = escapeRegExp(options.leftDelimiter);
@@ -231,6 +248,8 @@ exports.escapeRegExp = escapeRegExp;
 
 /**
  * find corresponding opening block
+ * @param {Token[]} tokens
+ * @param {number} i
  */
 exports.getMatchingOpeningToken = function (tokens, i) {
   if (tokens[i].type === 'softbreak') {
@@ -266,10 +285,18 @@ const HTML_REPLACEMENTS = {
   '"': '&quot;'
 };
 
+/**
+ * @param {string} ch
+ * @returns {string}
+ */
 function replaceUnsafeChar(ch) {
   return HTML_REPLACEMENTS[ch];
 }
 
+/**
+ * @param {string} str
+ * @returns {string}
+ */
 exports.escapeHtml = function (str) {
   if (HTML_ESCAPE_TEST_RE.test(str)) {
     return str.replace(HTML_ESCAPE_REPLACE_RE, replaceUnsafeChar);
