@@ -134,7 +134,7 @@ exports.addAttrs = function (attrs, token) {
     } else if (key === 'css-module') {
       token.attrJoin('css-module', attrs[j][1]);
     } else {
-      token.attrPush(attrs[j]);
+      token.attrSet(key, attrs[j][1]);
     }
   }
   return token;
