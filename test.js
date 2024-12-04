@@ -43,6 +43,14 @@ function describeTestsWithOptions(options, postText) {
       assert.deepEqual(res, expected);
     });
 
+    it(replaceDelimiters('should omit values {.class ..css-module #id key=val .class.with.dot}', options), () => {
+      const src = '{.good-class .keep-me .ignore-class .good.class.with.dot .ignore.class.with.dot ..good ..ignore #good #ignore-id key=key-to-ignore key=good-key}';
+      const expected = [['class', 'good-class'], ['class', 'keep-me'], ['class', 'good.class.with.dot'], ['css-module', 'good'], ['id', 'good'], ['key', 'good-key']];
+      const newOptions = Object.assign({}, options, { allowedAttributeValues: [/^good/, 'keep-me'] });
+      const res = utils.getAttrs(replaceDelimiters(src, options), 0, newOptions);
+      assert.deepEqual(res, expected);
+    });
+
     it(replaceDelimiters('should parse attributes with = {attr=/id=1}', options), () => {
       const src = '{link=/some/page/in/app/id=1}';
       const expected = [['link', '/some/page/in/app/id=1']];

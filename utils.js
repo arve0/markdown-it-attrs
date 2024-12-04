@@ -97,12 +97,25 @@ exports.getAttrs = function (str, start, options) {
     value += char_;
   }
 
-  if (options.allowedAttributes && options.allowedAttributes.length) {
-    const allowedAttributes = options.allowedAttributes;
+  const needsFilterAttributes = options.allowedAttributes && options.allowedAttributes.length;
+  const needsFilterAttributeValues = options.allowedAttributeValues && options.allowedAttributeValues.length;
 
+  if (needsFilterAttributes || needsFilterAttributeValues) {
+    const allowedAttributes = options.allowedAttributes;
+    const allowedAttributeValues = options.allowedAttributeValues;
     return attrs.filter(function (attrPair) {
       const attr = attrPair[0];
-
+      const attrValue = attrPair[1];
+      let attrPassed = !needsFilterAttributes;
+      let attrValuePassed = !needsFilterAttributeValues;
+      /**
+       * @param {AllowedAttribute} allowedAttributeValue
+       */
+      function isAllowedAttributeValue (allowedAttributeValue) {
+        return (attrValue === allowedAttributeValue
+          || (allowedAttributeValue instanceof RegExp && allowedAttributeValue.test(attrValue))
+        );
+      }
       /**
        * @param {AllowedAttribute} allowedAttribute
        */
@@ -111,13 +124,16 @@ exports.getAttrs = function (str, start, options) {
           || (allowedAttribute instanceof RegExp && allowedAttribute.test(attr))
         );
       }
-
-      return allowedAttributes.some(isAllowedAttribute);
+      if (needsFilterAttributes) {
+        attrPassed = allowedAttributes.some(isAllowedAttribute);
+      }
+      if (needsFilterAttributeValues) {
+        attrValuePassed = allowedAttributeValues.some(isAllowedAttributeValue);
+      }
+      return attrPassed && attrValuePassed;
     });
-
   }
   return attrs;
-
 };
 
 /**

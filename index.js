@@ -15,6 +15,7 @@ const patternsConfig = require('./patterns.js');
  * @property {!string} leftDelimiter left delimiter, default is `{`(left curly bracket)
  * @property {!string} rightDelimiter right delimiter, default is `}`(right curly bracket)
  * @property {AllowedAttribute[]} allowedAttributes empty means no limit
+ * @property {AllowedAttribute[]} allowedAttributeValues empty means no limit
  *
  * @typedef {string|RegExp} AllowedAttribute rule of allowed attribute
  *
