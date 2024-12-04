@@ -56,7 +56,8 @@ const patternsConfig = require('./patterns.js');
 const defaultOptions = {
   leftDelimiter: '{',
   rightDelimiter: '}',
-  allowedAttributes: []
+  allowedAttributes: [],
+  allowedAttributeValues: []
 };
 
 /**
