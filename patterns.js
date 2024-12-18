@@ -172,7 +172,7 @@ module.exports = options => {
         let idx = i - 2;
         while (idx > 0 && 'tbody_open' !== tokens[--idx].type);
 
-        const calc = tokens[idx].meta.colsnum >> 0;
+        const calc = tokens[idx].meta?.colsnum >> 0;
         if (calc < 2) { return; }
 
         const level = tokens[i].level + 2;
