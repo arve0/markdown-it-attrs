@@ -86,10 +86,16 @@ module.exports = function attributes(md, options_) {
           return res.match;
         });
         if (match) {
-          pattern.transform(tokens, i, j);
-          if (pattern.name === 'inline attributes' || pattern.name === 'inline nesting 0') {
-            // retry, may be several inline attributes
-            _p--;
+          try {
+            pattern.transform(tokens, i, j);
+            if (pattern.name === 'inline attributes' || pattern.name === 'inline nesting 0') {
+              // retry, may be several inline attributes
+              _p--;
+            }
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error("markdown-it-attrs: Error in pattern '".concat(pattern.name, "': ").concat(error.message));
+            console.error(error.stack);
           }
         }
         p = _p;
