@@ -84,10 +84,16 @@ module.exports = function attributes(md, options_) {
           return res.match;
         });
         if (match) {
-          pattern.transform(tokens, i, j);
-          if (pattern.name === 'inline attributes' || pattern.name === 'inline nesting 0') {
-            // retry, may be several inline attributes
-            p--;
+          try {
+            pattern.transform(tokens, i, j);
+            if (pattern.name === 'inline attributes' || pattern.name === 'inline nesting 0') {
+              // retry, may be several inline attributes
+              p--;
+            }
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`markdown-it-attrs: Error in pattern '${pattern.name}': ${error.message}`);
+            console.error(error.stack);
           }
         }
       }
