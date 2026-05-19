@@ -97,9 +97,10 @@ describe('markdown-it-attrs', () => {
 
     md = Md().use(attrs).use(headerlessTablePlugin);
     src = 'HEADERLESS_TABLE';
-    assert.doesNotThrow(() => md.render(src));
+    let result;
+    assert.doesNotThrow(() => { result = md.render(src); });
     expected = '<table>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n</tbody>\n</table>\n';
-    assert.equal(md.render(src), expected);
+    assert.equal(result, expected);
   });
 });
 
