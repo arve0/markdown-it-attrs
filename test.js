@@ -42,6 +42,13 @@ describe('markdown-it-attrs', () => {
     expected = '<table>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n<tr>\n<td>c</td>\n<td>d</td>\n</tr>\n</tbody>\n</table>\n';
     assert.equal(result, expected);
   });
+
+  it('should apply attributes on headerless tables', () => {
+    md = Md().use(multimdTable, { headerless: true }).use(attrs);
+    src = '| - | - |\n| a | b |\n| c | d |\n{a=b}\n';
+    expected = '<table a="b">\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n<tr>\n<td>c</td>\n<td>d</td>\n</tr>\n</tbody>\n</table>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
 function describeTestsWithOptions(options, postText) {
