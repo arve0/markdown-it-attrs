@@ -2,6 +2,7 @@
 'use strict';
 const assert = require('assert');
 const Md = require('markdown-it');
+const container = require('markdown-it-container');
 const implicitFigures = require('markdown-it-implicit-figures');
 const katex = require('markdown-it-katex');
 const multimdTable = require('markdown-it-multimd-table');
@@ -539,6 +540,13 @@ function describeTestsWithOptions(options, postText) {
       const mdWithOnlyKatex = Md().use(katex);
       src = '$\\sqrt{a}$';
       assert.equal(md.render(src), mdWithOnlyKatex.render(src));
+    });
+
+    it(replaceDelimiters('should work with plugin markdown-it-container', options), () => {
+      md = md.use(container, 'column');
+      src = ':::column {.column-container}\n\ncolumn test1 {.column-1}\n\n:::\n';
+      expected = '<div class="column-container column">\n<p class="column-1">column test1</p>\n</div>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
     });
 
     it(replaceDelimiters('should not apply inside `code{.red}`', options), () => {
