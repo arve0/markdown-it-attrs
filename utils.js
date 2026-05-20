@@ -374,5 +374,12 @@ exports.findLeftDelimiter = findLeftDelimiter;
  * @returns {boolean}
  */
 function isUnescapedDoubleQuote (str, i) {
-  return str.charAt(i) === '"' && str.charAt(i - 1) !== '\\';
+  if (str.charAt(i) !== '"') {
+    return false;
+  }
+  let slashCount = 0;
+  for (let n = i - 1; n >= 0 && str.charAt(n) === '\\'; n--) {
+    slashCount++;
+  }
+  return slashCount % 2 === 0;
 }
