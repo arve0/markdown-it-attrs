@@ -30,7 +30,7 @@ exports.getAttrs = function (str, start, options) {
   // start + left delimiter length to avoid beginning {
   // breaks when } is found or end of string
   for (let i = start + options.leftDelimiter.length; i < str.length; i++) {
-    if (str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
+    if (!valueInsideQuotes && str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
       if (key !== '') { attrs.push([key, value]); }
       break;
     }
@@ -202,7 +202,7 @@ exports.hasDelimiters = function (where, options) {
       // first char should be {, } found in char 2 or more
       slice = str.slice(0, options.leftDelimiter.length);
       start = slice === options.leftDelimiter ? 0 : -1;
-      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, rightDelimiterMinimumShift);
+      end = start === -1 ? -1 : findRightDelimiter(str, rightDelimiterMinimumShift, options);
       // check if next character is not one of the delimiters
       nextChar = str.charAt(end + options.rightDelimiter.length);
       if (nextChar && options.rightDelimiter.indexOf(nextChar) !== -1) {
@@ -212,8 +212,8 @@ exports.hasDelimiters = function (where, options) {
 
     case 'end':
       // last char should be }
-      start = str.lastIndexOf(options.leftDelimiter);
-      end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + rightDelimiterMinimumShift);
+      start = findLeftDelimiter(str, options);
+      end = start === -1 ? -1 : findRightDelimiter(str, start + rightDelimiterMinimumShift, options);
       end = end === str.length - options.rightDelimiter.length ? end : -1;
       break;
 
@@ -239,15 +239,18 @@ exports.hasDelimiters = function (where, options) {
  * @param {Options} options
  */
 exports.removeDelimiter = function (str, options) {
-  const start = escapeRegExp(options.leftDelimiter);
-  const end = escapeRegExp(options.rightDelimiter);
+  const start = findLeftDelimiter(str, options);
+  if (start === -1) {
+    return str;
+  }
 
-  const curly = new RegExp(
-    '[ \\n]?' + start + '[^' + start + end + ']+' + end + '$'
-  );
-  const pos = str.search(curly);
+  const end = findRightDelimiter(str, start + options.leftDelimiter.length, options);
+  if (end !== str.length - options.rightDelimiter.length) {
+    return str;
+  }
 
-  return pos !== -1 ? str.slice(0, pos) : str;
+  const prefix = str.slice(0, start);
+  return /[ \n]$/.test(prefix) ? prefix.slice(0, -1) : prefix;
 };
 
 /**
@@ -319,3 +322,50 @@ exports.escapeHtml = function (str) {
   }
   return str;
 };
+
+/**
+ * Find right delimiter index outside quoted values.
+ * @param {string} str
+ * @param {number} start
+ * @param {Options} options
+ * @returns {number}
+ */
+function findRightDelimiter (str, start, options) {
+  let valueInsideQuotes = false;
+  for (let i = start; i < str.length; i++) {
+    const char_ = str.charAt(i);
+    if (char_ === '"') {
+      valueInsideQuotes = !valueInsideQuotes;
+      continue;
+    }
+    if (!valueInsideQuotes &&
+      str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Find last left delimiter index outside quoted values.
+ * @param {string} str
+ * @param {Options} options
+ * @returns {number}
+ */
+function findLeftDelimiter (str, options) {
+  let start = -1;
+  let valueInsideQuotes = false;
+  for (let i = 0; i < str.length; i++) {
+    const char_ = str.charAt(i);
+    if (char_ === '"') {
+      valueInsideQuotes = !valueInsideQuotes;
+      continue;
+    }
+    if (!valueInsideQuotes &&
+      str.slice(i, i + options.leftDelimiter.length) === options.leftDelimiter) {
+      start = i;
+    }
+  }
+  return start;
+}
+exports.findLeftDelimiter = findLeftDelimiter;

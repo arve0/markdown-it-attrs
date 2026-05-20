@@ -49,6 +49,13 @@ describe('markdown-it-attrs', () => {
     expected = '<table a="b">\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n<tr>\n<td>c</td>\n<td>d</td>\n</tr>\n</tbody>\n</table>\n';
     assert.equal(md.render(src), expected);
   });
+
+  it('should parse attribute values containing closing curly braces in quotes', () => {
+    md = Md().use(attrs);
+    src = 'this is the markdown I\'m trying to parse {.replace-me data-tex="e^{i}=-1"}';
+    expected = '<p class="replace-me" data-tex="e^{i}=-1">this is the markdown I\'m trying to parse</p>\n';
+    assert.equal(md.render(src), expected);
+  });
 });
 
 function describeTestsWithOptions(options, postText) {
