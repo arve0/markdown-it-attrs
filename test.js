@@ -50,6 +50,17 @@ describe('markdown-it-attrs', () => {
     assert.equal(md.render(src), expected);
   });
 
+  it('should not throw on repeated renders of headerless tables', () => {
+    md = Md().use(multimdTable, { headerless: true }).use(attrs);
+    src = '| - | - |\n| a | b |\n| c | d |\n';
+    expected = '<table>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n<tr>\n<td>c</td>\n<td>d</td>\n</tr>\n</tbody>\n</table>\n';
+
+    assert.doesNotThrow(() => {
+      assert.equal(md.render(src), expected);
+      assert.equal(md.render(src), expected);
+    });
+  });
+
   it('should parse attribute values containing closing curly braces in quotes', () => {
     md = Md().use(attrs);
     src = 'this is the markdown I\'m trying to parse {.replace-me data-tex="e^{i}=-1"}';
