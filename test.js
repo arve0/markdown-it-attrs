@@ -324,6 +324,22 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    it(replaceDelimiters('should apply fenced code block attributes on the inner <code> by default', options), () => {
+      src = '```js { data-file="index.js" }\nfoo();\n```';
+      expected = '<pre><code data-file="index.js" class="language-js">foo();\n</code></pre>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it(replaceDelimiters('should support custom fence renderer to render fenced code block attributes on <pre>', options), () => {
+      md.renderer.rules.fence = (tokens, idx, opts, env, slf) => {
+        const token = tokens[idx];
+        return '<pre' + slf.renderAttrs(token) + '><code>' + token.content + '</code></pre>\n';
+      };
+      src = '```js { data-file="index.js" }\nfoo();\n```';
+      expected = '<pre data-file="index.js"><code>foo();\n</code></pre>\n';
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
     it(replaceDelimiters('should support blockquotes', options), () => {
       src = '> quote\n{.c}';
       expected = '<blockquote class="c">\n<p>quote</p>\n</blockquote>\n';
