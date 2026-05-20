@@ -4,7 +4,10 @@
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "main": "index.js",
   "license": "MIT",
-  "repository": "arve0/markdown-it-attrs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arve0/markdown-it-attrs.git"
+  },
   "author": {
     "name": "Arve Seljebu",
     "email": "arve.seljebu@gmail.com",
