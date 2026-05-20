@@ -59,6 +59,22 @@ describe('markdown-it-attrs', () => {
   });
 });
 
+describe('markdown-it-attrs fence renderer', () => {
+  it('should add attributes to <pre> on fenced code blocks', () => {
+    const md = Md().use(attrs);
+    const src = '```js {data-file="index.js"}\nfoo();\n```';
+    const res = md.render(src);
+    assert.equal(res, '<pre data-file="index.js"><code class="language-js">foo();\n</code></pre>\n');
+  });
+
+  it('should keep language class on <code> with no attrs', () => {
+    const md = Md().use(attrs);
+    const src = '```js\nfoo();\n```';
+    const res = md.render(src);
+    assert.equal(res, '<pre><code class="language-js">foo();\n</code></pre>\n');
+  });
+});
+
 function describeTestsWithOptions(options, postText) {
   describe('markdown-it-attrs.utils' + postText, () => {
     it(replaceDelimiters('should parse {.class ..css-module #id key=val .class.with.dot}', options), () => {
@@ -315,13 +331,13 @@ function describeTestsWithOptions(options, postText) {
 
     it(replaceDelimiters('should support code blocks', options), () => {
       src = '```{.c a=1 #ii}\nfor i in range(10):\n```';
-      expected = '<pre><code class="c" a="1" id="ii">for i in range(10):\n</code></pre>\n';
+      expected = '<pre class="c" a="1" id="ii"><code>for i in range(10):\n</code></pre>\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
     it(replaceDelimiters('should support code blocks with language defined', options), () => {
       src = '```python {.c a=1 #ii}\nfor i in range(10):\n```';
-      expected = '<pre><code class="c language-python" a="1" id="ii">for i in range(10):\n</code></pre>\n';
+      expected = '<pre class="c" a="1" id="ii"><code class="language-python">for i in range(10):\n</code></pre>\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
