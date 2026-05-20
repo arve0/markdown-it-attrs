@@ -2,6 +2,9 @@ name: ci
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Node ${{ matrix.node-version }} on Linux
