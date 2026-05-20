@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "moduleResolution": "node10",
+    "ignoreDeprecations": "6.0",
+    "module": "commonjs",
+    "target": "es6"
+  },
+  "include": ["test-types.ts"]
+}

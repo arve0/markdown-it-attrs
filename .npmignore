@@ -12,3 +12,5 @@
 /.github
 /.devcontainer
 /debug.js
+/test-types.ts
+/tsconfig.json

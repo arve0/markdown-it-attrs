@@ -3,6 +3,7 @@
   "version": "4.4.0",
   "description": "Add classes, identifiers and attributes to your markdown with {} curly brackets, similar to pandoc's header attributes",
   "main": "index.js",
+  "types": "index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,7 +23,8 @@
     "lint": "eslint .",
     "preversion": "mocha && npm run browser && git add markdown-it-attrs.browser.js",
     "postpublish": "git push && git push --tags",
-    "test": "npm run lint && nyc mocha"
+    "test": "npm run lint && npm run typecheck && nyc mocha",
+    "typecheck": "tsc --project tsconfig.json"
   },
   "homepage": "https://github.com/arve0/markdown-it-attrs",
   "keywords": [
