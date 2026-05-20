@@ -62,11 +62,11 @@ exports.getAttrs = function (str, start, options) {
     }
 
     // {value="inside quotes"}
-    if (char_ === '"' && value === '' && !valueInsideQuotes) {
+    if (isUnescapedDoubleQuote(str, i) && value === '' && !valueInsideQuotes) {
       valueInsideQuotes = true;
       continue;
     }
-    if (char_ === '"' && valueInsideQuotes) {
+    if (isUnescapedDoubleQuote(str, i) && valueInsideQuotes) {
       valueInsideQuotes = false;
       continue;
     }
@@ -334,7 +334,7 @@ function findRightDelimiter (str, start, options) {
   let valueInsideQuotes = false;
   for (let i = start; i < str.length; i++) {
     const char_ = str.charAt(i);
-    if (char_ === '"') {
+    if (char_ === '"' && isUnescapedDoubleQuote(str, i)) {
       valueInsideQuotes = !valueInsideQuotes;
       continue;
     }
@@ -357,7 +357,7 @@ function findLeftDelimiter (str, options) {
   let valueInsideQuotes = false;
   for (let i = 0; i < str.length; i++) {
     const char_ = str.charAt(i);
-    if (char_ === '"') {
+    if (char_ === '"' && isUnescapedDoubleQuote(str, i)) {
       valueInsideQuotes = !valueInsideQuotes;
       continue;
     }
@@ -369,3 +369,12 @@ function findLeftDelimiter (str, options) {
   return start;
 }
 exports.findLeftDelimiter = findLeftDelimiter;
+
+/**
+ * @param {string} str
+ * @param {number} i
+ * @returns {boolean}
+ */
+function isUnescapedDoubleQuote (str, i) {
+  return str.charAt(i) === '"' && str.charAt(i - 1) !== '\\';
+}
