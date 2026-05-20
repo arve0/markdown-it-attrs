@@ -331,13 +331,14 @@ function describeTestsWithOptions(options, postText) {
     });
 
     it(replaceDelimiters('should support custom fence renderer to render fenced code block attributes on <pre>', options), () => {
-      md.renderer.rules.fence = (tokens, idx, opts, env, slf) => {
+      const mdWithCustomRenderer = Md().use(attrs, options);
+      mdWithCustomRenderer.renderer.rules.fence = (tokens, idx, opts, env, slf) => {
         const token = tokens[idx];
-        return '<pre' + slf.renderAttrs(token) + '><code>' + token.content + '</code></pre>\n';
+        return '<pre' + slf.renderAttrs(token) + '><code>' + mdWithCustomRenderer.utils.escapeHtml(token.content) + '</code></pre>\n';
       };
       src = '```js { data-file="index.js" }\nfoo();\n```';
       expected = '<pre data-file="index.js"><code>foo();\n</code></pre>\n';
-      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+      assert.equal(mdWithCustomRenderer.render(replaceDelimiters(src, options)), expected);
     });
 
     it(replaceDelimiters('should support blockquotes', options), () => {
