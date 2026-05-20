@@ -628,6 +628,41 @@ function describeTestsWithOptions(options, postText) {
       expected = replaceDelimiters('<p><img src="https://example.com/image.jpg" alt="" class="" height="100" width=""></p>\n', options);
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
+
+    it(replaceDelimiters('should work with heading anchor navigation plugins that add tokens before curly_attributes', options), () => {
+      // Simulate a navigation/heading-anchor plugin that registers its core rule
+      // using md.core.ruler.before('linkify', ...) – i.e. BEFORE curly_attributes –
+      // and appends link tokens after the heading text.  The attrs plugin must still
+      // be able to find and process the {#id} even though it is no longer the last
+      // child of the inline token.
+      function headingAnchorPlugin(mdInstance) {
+        mdInstance.core.ruler.before('linkify', 'heading_anchor_test', function(state) {
+          const Token = state.Token;
+          state.tokens.forEach((t, idx) => {
+            if (t.type !== 'heading_open') { return; }
+            const inlineToken = state.tokens[idx + 1];
+            const space = new Token('text', '', 0);
+            space.content = ' ';
+            const aOpen = new Token('link_open', 'a', 1);
+            aOpen.attrs = [['href', '#']];
+            const hash = new Token('html_inline', '', 0);
+            hash.content = '#';
+            const aClose = new Token('link_close', 'a', -1);
+            inlineToken.children.push(space, aOpen, hash, aClose);
+          });
+        });
+      }
+
+      // headingAnchorPlugin is loaded FIRST, so its core rule runs before
+      // curly_attributes (which is registered by md.use(attrs) below).
+      const mdNav = Md();
+      headingAnchorPlugin(mdNav);
+      mdNav.use(attrs, options);
+
+      src = replaceDelimiters('## H2 heading {#my-id}', options);
+      expected = '<h2 id="my-id">H2 heading <a href="#">#</a></h2>\n';
+      assert.equal(mdNav.render(src), expected);
+    });
   });
 }
 

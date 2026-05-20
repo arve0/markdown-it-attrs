@@ -459,26 +459,24 @@ module.exports = options => {
     }, {
       /**
        * end of {.block}
+       *
+       * Also handles the case where a navigation plugin (e.g. heading anchors)
+       * adds non-text tokens after the heading text before curly_attributes runs.
+       * In that case the last meaningful text child (skipping trailing whitespace-only
+       * text tokens and balanced inline-tag sequences such as link_open/link_close)
+       * is used instead of the absolute last child.
        */
       name: 'end of block',
       tests: [
         {
           shift: 0,
           type: 'inline',
-          children: [
-            {
-              position: -1,
-              content: utils.hasDelimiters('end', options),
-              type: (t) => t !== 'code_inline' && t !== 'math_inline'
-            }
-          ]
+          children: (arr) => endOfBlockSearch(arr, options) !== null
         }
       ],
-      /**
-       * @param {!number} j
-       */
-      transform: (tokens, i, j) => {
-        const token = tokens[i].children[j];
+      transform: (tokens, i) => {
+        const token = endOfBlockSearch(tokens[i].children, options);
+        if (!token) { return; }
         const content = token.content;
         const attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
         let ii = i + 1;
@@ -496,6 +494,61 @@ module.exports = options => {
 // get last element of array or string
 function last(arr) {
   return arr.slice(-1)[0];
+}
+
+/**
+ * Search backward through inline children for the last non-whitespace text
+ * child that has attrs at its end (e.g. `{#id}`), skipping over:
+ *   - balanced inline-tag sequences at the top level (nesting +1/-1 pairs,
+ *     such as a navigation anchor link_open … link_close appended by a
+ *     heading-anchor plugin), and
+ *   - whitespace-only text tokens (e.g. the space injected before a permalink).
+ *
+ * Returns the matching token, or null if none found.
+ *
+ * @param {import('.').Token[]} arr  Children of the inline token.
+ * @param {import('.').Options} options
+ * @returns {import('.').Token|null}
+ */
+function endOfBlockSearch(arr, options) {
+  let depth = 0;
+  for (let k = arr.length - 1; k >= 0; k--) {
+    const child = arr[k];
+    if (child.type === 'code_inline' || child.type === 'math_inline') {
+      return null;
+    }
+    if (child.nesting === -1) {
+      // Closing inline tag: we're entering a nested structure going backward.
+      depth++;
+      continue;
+    }
+    if (child.nesting === 1) {
+      // Opening inline tag: we're exiting a nested structure going backward.
+      depth--;
+      if (depth < 0) {
+        // Unmatched opening tag – stop searching.
+        return null;
+      }
+      continue;
+    }
+    // nesting === 0 (text, html_inline, softbreak, etc.)
+    if (depth > 0) {
+      // Inside a nested structure: skip.
+      continue;
+    }
+    // Top-level token (depth === 0).
+    if (child.type !== 'text') {
+      // Non-text self-closing token at top level (e.g. html_inline "#"): skip.
+      continue;
+    }
+    if (child.content.trim() === '') {
+      // Whitespace-only text (e.g. the space before a permalink): skip.
+      continue;
+    }
+    // Found the last meaningful text child – check for attrs.
+    return utils.hasDelimiters('end', options)(child.content) ? child : null;
+  }
+  return null;
 }
 
 /**
