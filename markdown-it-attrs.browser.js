@@ -430,7 +430,7 @@ module.exports = function (options) {
       /** index of the tbody beginning */
       var idx = i - 2;
       while (idx > 0 && 'tbody_open' !== tokens[--idx].type);
-      var calc = tokens[idx].meta.colsnum >> 0;
+      var calc = (tokens[idx].meta && tokens[idx].meta.colsnum) >> 0;
       if (calc < 2) {
         return;
       }
