@@ -298,7 +298,7 @@ module.exports = function (options) {
     }],
     transform: function transform(tokens, i) {
       var token = tokens[i];
-      var start = token.info.lastIndexOf(options.leftDelimiter);
+      var start = utils.findLeftDelimiter(token.info, options);
       var attrs = utils.getAttrs(token.info, start, options);
       utils.addAttrs(attrs, token);
       token.info = utils.removeDelimiter(token.info, options);
@@ -625,9 +625,9 @@ module.exports = function (options) {
     transform: function transform(tokens, i, j) {
       var token = tokens[i].children[j];
       var content = token.content;
-      var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
+      var attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
       utils.addAttrs(attrs, tokens[i - 2]);
-      var trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
+      var trimmed = content.slice(0, utils.findLeftDelimiter(content, options));
       token.content = last(trimmed) !== ' ' ? trimmed : trimmed.slice(0, -1);
     }
   }, {
@@ -699,33 +699,35 @@ module.exports = function (options) {
   }, {
     /**
      * end of {.block}
+     *
+     * Also handles the case where a navigation plugin (e.g. heading anchors)
+     * adds non-text tokens after the heading text before curly_attributes runs.
+     * In that case the last meaningful text child (skipping trailing whitespace-only
+     * text tokens and balanced inline-tag sequences such as link_open/link_close)
+     * is used instead of the absolute last child.
      */
     name: 'end of block',
     tests: [{
       shift: 0,
       type: 'inline',
-      children: [{
-        position: -1,
-        content: utils.hasDelimiters('end', options),
-        type: function type(t) {
-          return t !== 'code_inline' && t !== 'math_inline';
-        }
-      }]
+      children: function children(arr) {
+        return endOfBlockSearch(arr, options) !== null;
+      }
     }],
-    /**
-     * @param {!number} j
-     */
-    transform: function transform(tokens, i, j) {
-      var token = tokens[i].children[j];
+    transform: function transform(tokens, i) {
+      var token = endOfBlockSearch(tokens[i].children, options);
+      if (!token) {
+        return;
+      }
       var content = token.content;
-      var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
+      var attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
       var ii = i + 1;
       do if (tokens[ii] && tokens[ii].nesting === -1) {
         break;
       } while (ii++ < tokens.length);
       var openingToken = utils.getMatchingOpeningToken(tokens, ii);
       utils.addAttrs(attrs, openingToken);
-      var trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
+      var trimmed = content.slice(0, utils.findLeftDelimiter(content, options));
       token.content = last(trimmed) !== ' ' ? trimmed : trimmed.slice(0, -1);
     }
   }];
@@ -734,6 +736,65 @@ module.exports = function (options) {
 // get last element of array or string
 function last(arr) {
   return arr.slice(-1)[0];
+}
+
+/**
+ * Search backward through inline children for the last non-whitespace text
+ * child that has attrs at its end (e.g. `{#id}`), skipping over:
+ *   - balanced inline-tag sequences at the top level (nesting +1/-1 pairs,
+ *     such as a navigation anchor link_open … link_close appended by a
+ *     heading-anchor plugin), and
+ *   - whitespace-only text tokens (e.g. the space injected before a permalink).
+ *
+ * Returns the matching token, or null if none found.
+ *
+ * @param {import('.').Token[]} arr  Children of the inline token.
+ * @param {import('.').Options} options
+ * @returns {import('.').Token|null}
+ */
+function endOfBlockSearch(arr, options) {
+  // `depth` tracks how many levels deep we are in nested inline structures
+  // when traversing backward.  depth=0 means we are at the top level of the
+  // inline token's children; depth>0 means we are inside a nested structure
+  // (e.g. inside an em or strong that comes after the text we care about).
+  var depth = 0;
+  for (var k = arr.length - 1; k >= 0; k--) {
+    var child = arr[k];
+    if (child.type === 'code_inline' || child.type === 'math_inline') {
+      return null;
+    }
+    if (child.nesting === -1) {
+      // Closing inline tag: we're entering a nested structure going backward.
+      depth++;
+      continue;
+    }
+    if (child.nesting === 1) {
+      // Opening inline tag: we're exiting a nested structure going backward.
+      depth--;
+      if (depth < 0) {
+        // Unmatched opening tag – stop searching.
+        return null;
+      }
+      continue;
+    }
+    // nesting === 0 (text, html_inline, softbreak, etc.)
+    if (depth > 0) {
+      // Inside a nested structure: skip.
+      continue;
+    }
+    // Top-level token (depth === 0).
+    if (child.type !== 'text') {
+      // Non-text self-closing token at top level (e.g. html_inline "#"): skip.
+      continue;
+    }
+    if (child.content.trim() === '') {
+      // Whitespace-only text (e.g. the space before a permalink): skip.
+      continue;
+    }
+    // Found the last meaningful text child – check for attrs.
+    return utils.hasDelimiters('end', options)(child.content) ? child : null;
+  }
+  return null;
 }
 
 /**
@@ -784,7 +845,7 @@ exports.getAttrs = function (str, start, options) {
   // start + left delimiter length to avoid beginning {
   // breaks when } is found or end of string
   for (var i = start + options.leftDelimiter.length; i < str.length; i++) {
-    if (str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
+    if (!valueInsideQuotes && str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
       if (key !== '') {
         attrs.push([key, value]);
       }
@@ -818,11 +879,11 @@ exports.getAttrs = function (str, start, options) {
     }
 
     // {value="inside quotes"}
-    if (char_ === '"' && value === '' && !valueInsideQuotes) {
+    if (isUnescapedDoubleQuote(str, i) && value === '' && !valueInsideQuotes) {
       valueInsideQuotes = true;
       continue;
     }
-    if (char_ === '"' && valueInsideQuotes) {
+    if (isUnescapedDoubleQuote(str, i) && valueInsideQuotes) {
       valueInsideQuotes = false;
       continue;
     }
@@ -948,7 +1009,7 @@ exports.hasDelimiters = function (where, options) {
         // first char should be {, } found in char 2 or more
         slice = str.slice(0, options.leftDelimiter.length);
         start = slice === options.leftDelimiter ? 0 : -1;
-        end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, rightDelimiterMinimumShift);
+        end = start === -1 ? -1 : findRightDelimiter(str, rightDelimiterMinimumShift, options);
         // check if next character is not one of the delimiters
         nextChar = str.charAt(end + options.rightDelimiter.length);
         if (nextChar && options.rightDelimiter.indexOf(nextChar) !== -1) {
@@ -957,8 +1018,8 @@ exports.hasDelimiters = function (where, options) {
         break;
       case 'end':
         // last char should be }
-        start = str.lastIndexOf(options.leftDelimiter);
-        end = start === -1 ? -1 : str.indexOf(options.rightDelimiter, start + rightDelimiterMinimumShift);
+        start = findLeftDelimiter(str, options);
+        end = start === -1 ? -1 : findRightDelimiter(str, start + rightDelimiterMinimumShift, options);
         end = end === str.length - options.rightDelimiter.length ? end : -1;
         break;
       case 'only':
@@ -981,11 +1042,16 @@ exports.hasDelimiters = function (where, options) {
  * @param {Options} options
  */
 exports.removeDelimiter = function (str, options) {
-  var start = escapeRegExp(options.leftDelimiter);
-  var end = escapeRegExp(options.rightDelimiter);
-  var curly = new RegExp('[ \\n]?' + start + '[^' + start + end + ']+' + end + '$');
-  var pos = str.search(curly);
-  return pos !== -1 ? str.slice(0, pos) : str;
+  var start = findLeftDelimiter(str, options);
+  if (start === -1) {
+    return str;
+  }
+  var end = findRightDelimiter(str, start + options.leftDelimiter.length, options);
+  if (end !== str.length - options.rightDelimiter.length) {
+    return str;
+  }
+  var prefix = str.slice(0, start);
+  return /[ \n]$/.test(prefix) ? prefix.slice(0, -1) : prefix;
 };
 
 /**
@@ -1053,6 +1119,65 @@ exports.escapeHtml = function (str) {
   }
   return str;
 };
+
+/**
+ * Find right delimiter index outside quoted values.
+ * @param {string} str
+ * @param {number} start
+ * @param {Options} options
+ * @returns {number}
+ */
+function findRightDelimiter(str, start, options) {
+  var valueInsideQuotes = false;
+  for (var i = start; i < str.length; i++) {
+    if (isUnescapedDoubleQuote(str, i)) {
+      valueInsideQuotes = !valueInsideQuotes;
+      continue;
+    }
+    if (!valueInsideQuotes && str.slice(i, i + options.rightDelimiter.length) === options.rightDelimiter) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Find last left delimiter index outside quoted values.
+ * @param {string} str
+ * @param {Options} options
+ * @returns {number}
+ */
+function findLeftDelimiter(str, options) {
+  var start = -1;
+  var valueInsideQuotes = false;
+  for (var i = 0; i < str.length; i++) {
+    if (isUnescapedDoubleQuote(str, i)) {
+      valueInsideQuotes = !valueInsideQuotes;
+      continue;
+    }
+    if (!valueInsideQuotes && str.slice(i, i + options.leftDelimiter.length) === options.leftDelimiter) {
+      start = i;
+    }
+  }
+  return start;
+}
+exports.findLeftDelimiter = findLeftDelimiter;
+
+/**
+ * @param {string} str
+ * @param {number} i
+ * @returns {boolean}
+ */
+function isUnescapedDoubleQuote(str, i) {
+  if (str.charAt(i) !== '"') {
+    return false;
+  }
+  var slashCount = 0;
+  for (var n = i - 1; n >= 0 && str.charAt(n) === '\\'; n--) {
+    slashCount++;
+  }
+  return slashCount % 2 === 0;
+}
 
 },{}]},{},[1])(1)
 });
