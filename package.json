@@ -49,6 +49,7 @@
     "coveralls": "^3.1.1",
     "eslint": "^8.4.1",
     "markdown-it": ">=13.0.1",
+    "markdown-it-container": "^4.0.0",
     "markdown-it-implicit-figures": ">=0.9.0",
     "markdown-it-katex": "^2.0.3",
     "markdown-it-multimd-table": "^4.2.3",
