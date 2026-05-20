@@ -17,6 +17,7 @@ var patternsConfig = require('./patterns.js');
  * @property {!string} leftDelimiter left delimiter, default is `{`(left curly bracket)
  * @property {!string} rightDelimiter right delimiter, default is `}`(right curly bracket)
  * @property {AllowedAttribute[]} allowedAttributes empty means no limit
+ * @property {AllowedAttribute[]} allowedAttributeValues empty means no limit
  *
  * @typedef {string|RegExp} AllowedAttribute rule of allowed attribute
  *
@@ -57,7 +58,8 @@ var patternsConfig = require('./patterns.js');
 var defaultOptions = {
   leftDelimiter: '{',
   rightDelimiter: '}',
-  allowedAttributes: []
+  allowedAttributes: [],
+  allowedAttributeValues: []
 };
 
 /**
@@ -850,18 +852,35 @@ exports.getAttrs = function (str, start, options) {
     }
     value += char_;
   }
-  if (options.allowedAttributes && options.allowedAttributes.length) {
+  var needsFilterAttributes = options.allowedAttributes && options.allowedAttributes.length;
+  var needsFilterAttributeValues = options.allowedAttributeValues && options.allowedAttributeValues.length;
+  if (needsFilterAttributes || needsFilterAttributeValues) {
     var allowedAttributes = options.allowedAttributes;
+    var allowedAttributeValues = options.allowedAttributeValues;
     return attrs.filter(function (attrPair) {
       var attr = attrPair[0];
-
+      var attrValue = attrPair[1];
+      var attrPassed = !needsFilterAttributes;
+      var attrValuePassed = !needsFilterAttributeValues;
+      /**
+       * @param {AllowedAttribute} allowedAttributeValue
+       */
+      function isAllowedAttributeValue(allowedAttributeValue) {
+        return attrValue === allowedAttributeValue || allowedAttributeValue instanceof RegExp && allowedAttributeValue.test(attrValue);
+      }
       /**
        * @param {AllowedAttribute} allowedAttribute
        */
       function isAllowedAttribute(allowedAttribute) {
         return attr === allowedAttribute || allowedAttribute instanceof RegExp && allowedAttribute.test(attr);
       }
-      return allowedAttributes.some(isAllowedAttribute);
+      if (needsFilterAttributes) {
+        attrPassed = allowedAttributes.some(isAllowedAttribute);
+      }
+      if (needsFilterAttributeValues) {
+        attrValuePassed = allowedAttributeValues.some(isAllowedAttributeValue);
+      }
+      return attrPassed && attrValuePassed;
     });
   }
   return attrs;
@@ -881,7 +900,7 @@ exports.addAttrs = function (attrs, token) {
     } else if (key === 'css-module') {
       token.attrJoin('css-module', attrs[j][1]);
     } else {
-      token.attrPush(attrs[j]);
+      token.attrSet(key, attrs[j][1]);
     }
   }
   return token;
