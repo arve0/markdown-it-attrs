@@ -4,6 +4,7 @@ const assert = require('assert');
 const Md = require('markdown-it');
 const implicitFigures = require('markdown-it-implicit-figures');
 const katex = require('markdown-it-katex');
+const multimdTable = require('markdown-it-multimd-table');
 const attrs = require('./');
 const utils = require('./utils.js');
 
@@ -34,72 +35,11 @@ describe('markdown-it-attrs', () => {
   });
 
   it('should not throw on tables without thead (headerless tables)', () => {
-    // Simulate a headerless table (e.g. from markdown-it-multimd-table with headerless: true)
-    // where tbody_open.meta is null because there is no thead section to set colsnum.
-    // The plugin must be loaded after attrs so it can insert its rule before 'curly_attributes'.
-    function headerlessTablePlugin(md) {
-      md.core.ruler.before('curly_attributes', 'headerless_table', (state) => {
-        const Token = state.Token;
-        for (let i = 0; i < state.tokens.length; i++) {
-          if (state.tokens[i].type === 'inline' && state.tokens[i].content === 'HEADERLESS_TABLE') {
-            const start = i - 1; // paragraph_open
-            const tableTokens = [];
-
-            const tableOpen = new Token('table_open', 'table', 1);
-            tableOpen.level = 0;
-            tableOpen.block = true;
-            const tbodyOpen = new Token('tbody_open', 'tbody', 1);
-            tbodyOpen.level = 1;
-            tbodyOpen.block = true;
-            // meta is null (not set), simulating a headerless table
-            const trOpen = new Token('tr_open', 'tr', 1);
-            trOpen.level = 2;
-            trOpen.block = true;
-            const tdOpen = new Token('td_open', 'td', 1);
-            tdOpen.level = 3;
-            tdOpen.block = true;
-            const inline1 = new Token('inline', '', 0);
-            inline1.content = 'a';
-            inline1.children = [Object.assign(new Token('text', '', 0), { content: 'a' })];
-            inline1.level = 4;
-            const tdClose = new Token('td_close', 'td', -1);
-            tdClose.level = 3;
-            tdClose.block = true;
-            const tdOpen2 = new Token('td_open', 'td', 1);
-            tdOpen2.level = 3;
-            tdOpen2.block = true;
-            const inline2 = new Token('inline', '', 0);
-            inline2.content = 'b';
-            inline2.children = [Object.assign(new Token('text', '', 0), { content: 'b' })];
-            inline2.level = 4;
-            const tdClose2 = new Token('td_close', 'td', -1);
-            tdClose2.level = 3;
-            tdClose2.block = true;
-            const trClose = new Token('tr_close', 'tr', -1);
-            trClose.level = 2;
-            trClose.block = true;
-            const tbodyClose = new Token('tbody_close', 'tbody', -1);
-            tbodyClose.level = 1;
-            tbodyClose.block = true;
-            const tableClose = new Token('table_close', 'table', -1);
-            tableClose.level = 0;
-            tableClose.block = true;
-
-            tableTokens.push(tableOpen, tbodyOpen, trOpen, tdOpen, inline1, tdClose,
-              tdOpen2, inline2, tdClose2, trClose, tbodyClose, tableClose);
-            // Replace paragraph_open, inline, paragraph_close with the headerless table tokens
-            state.tokens.splice(start, 3, ...tableTokens);
-            break;
-          }
-        }
-      });
-    }
-
-    md = Md().use(attrs).use(headerlessTablePlugin);
-    src = 'HEADERLESS_TABLE';
+    md = Md().use(multimdTable, { headerless: true }).use(attrs);
+    src = '| - | - |\n| a | b |\n| c | d |\n';
     let result;
     assert.doesNotThrow(() => { result = md.render(src); });
-    expected = '<table>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n</tbody>\n</table>\n';
+    expected = '<table>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n<tr>\n<td>c</td>\n<td>d</td>\n</tr>\n</tbody>\n</table>\n';
     assert.equal(result, expected);
   });
 });
