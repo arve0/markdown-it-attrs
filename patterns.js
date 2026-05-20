@@ -33,7 +33,7 @@ module.exports = options => {
       ],
       transform: (tokens, i) => {
         const token = tokens[i];
-        const start = token.info.lastIndexOf(options.leftDelimiter);
+        const start = utils.findLeftDelimiter(token.info, options);
         const attrs = utils.getAttrs(token.info, start, options);
         utils.addAttrs(attrs, token);
         token.info = utils.removeDelimiter(token.info, options);
@@ -382,9 +382,9 @@ module.exports = options => {
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const content = token.content;
-        const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
+        const attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
         utils.addAttrs(attrs, tokens[i - 2]);
-        const trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
+        const trimmed = content.slice(0, utils.findLeftDelimiter(content, options));
         token.content = last(trimmed) !== ' ' ?
           trimmed : trimmed.slice(0, -1);
       }
@@ -480,12 +480,12 @@ module.exports = options => {
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
         const content = token.content;
-        const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
+        const attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
         let ii = i + 1;
         do if (tokens[ii] && tokens[ii].nesting === -1) { break; } while (ii++ < tokens.length);
         const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
-        const trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
+        const trimmed = content.slice(0, utils.findLeftDelimiter(content, options));
         token.content = last(trimmed) !== ' ' ?
           trimmed : trimmed.slice(0, -1);
       }
