@@ -333,8 +333,7 @@ exports.escapeHtml = function (str) {
 function findRightDelimiter (str, start, options) {
   let valueInsideQuotes = false;
   for (let i = start; i < str.length; i++) {
-    const char_ = str.charAt(i);
-    if (char_ === '"' && isUnescapedDoubleQuote(str, i)) {
+    if (isUnescapedDoubleQuote(str, i)) {
       valueInsideQuotes = !valueInsideQuotes;
       continue;
     }
@@ -356,8 +355,7 @@ function findLeftDelimiter (str, options) {
   let start = -1;
   let valueInsideQuotes = false;
   for (let i = 0; i < str.length; i++) {
-    const char_ = str.charAt(i);
-    if (char_ === '"' && isUnescapedDoubleQuote(str, i)) {
+    if (isUnescapedDoubleQuote(str, i)) {
       valueInsideQuotes = !valueInsideQuotes;
       continue;
     }
