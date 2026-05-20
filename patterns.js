@@ -511,6 +511,10 @@ function last(arr) {
  * @returns {import('.').Token|null}
  */
 function endOfBlockSearch(arr, options) {
+  // `depth` tracks how many levels deep we are in nested inline structures
+  // when traversing backward.  depth=0 means we are at the top level of the
+  // inline token's children; depth>0 means we are inside a nested structure
+  // (e.g. inside an em or strong that comes after the text we care about).
   let depth = 0;
   for (let k = arr.length - 1; k >= 0; k--) {
     const child = arr[k];

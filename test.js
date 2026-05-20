@@ -645,10 +645,10 @@ function describeTestsWithOptions(options, postText) {
             space.content = ' ';
             const aOpen = new Token('link_open', 'a', 1);
             aOpen.attrs = [['href', '#']];
-            const hash = new Token('html_inline', '', 0);
-            hash.content = '#';
+            const anchorSymbol = new Token('html_inline', '', 0);
+            anchorSymbol.content = '#';
             const aClose = new Token('link_close', 'a', -1);
-            inlineToken.children.push(space, aOpen, hash, aClose);
+            inlineToken.children.push(space, aOpen, anchorSymbol, aClose);
           });
         });
       }
