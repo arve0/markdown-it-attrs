@@ -8,6 +8,7 @@ declare namespace markdownItAttrs {
     rightDelimiter?: string;
     allowedAttributes?: AllowedAttribute[];
     allowedAttributeValues?: AllowedAttribute[];
+    fenceAttrsOnPre?: boolean;
   }
 }
 

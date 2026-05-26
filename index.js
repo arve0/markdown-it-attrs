@@ -1,5 +1,6 @@
 'use strict';
 
+const createMarkdownIt = require('markdown-it');
 const patternsConfig = require('./patterns.js');
 
 /**
@@ -16,6 +17,7 @@ const patternsConfig = require('./patterns.js');
  * @property {!string} rightDelimiter right delimiter, default is `}`(right curly bracket)
  * @property {AllowedAttribute[]} allowedAttributes empty means no limit
  * @property {AllowedAttribute[]} allowedAttributeValues empty means no limit
+ * @property {boolean} fenceAttrsOnPre set fenced-code attrs on <pre>, default true
  *
  * @typedef {string|RegExp} AllowedAttribute rule of allowed attribute
  *
@@ -57,7 +59,8 @@ const defaultOptions = {
   leftDelimiter: '{',
   rightDelimiter: '}',
   allowedAttributes: [],
-  allowedAttributeValues: []
+  allowedAttributeValues: [],
+  fenceAttrsOnPre: true
 };
 
 /**
@@ -104,32 +107,32 @@ module.exports = function attributes(md, options_) {
 
   md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
 
-  // Always install a fence renderer so that markdown-it-attrs attributes go
-  // on <pre> (the outer element) rather than <code> (the inner element).
-  // This is a breaking change vs the default markdown-it behaviour.
-  //
-  // If you need a custom fence renderer (e.g. a syntax highlighter), set
-  // md.renderer.rules.fence AFTER calling md.use(attrs) so your renderer
-  // takes precedence over this one.
-  const originalFence = md.renderer.rules.fence;
-  md.renderer.rules.fence = function (tokens, idx, mdOptions, env, slf) {
-    const token = tokens[idx];
-    const savedAttrs = token.attrs ? token.attrs.slice() : null;
+  // Install a fence renderer to place attrs on <pre> instead of <code>.
+  // Do this only when enabled and no custom fence renderer is already present.
+  const defaultFence = createMarkdownIt().renderer.rules.fence;
+  const currentFence = md.renderer.rules.fence;
+  const hasCustomFence = typeof currentFence === 'function' && currentFence !== defaultFence;
 
-    // Temporarily remove user attrs so the built-in renderer does not place
-    // them on <code>.
-    token.attrs = null;
-    const result = originalFence(tokens, idx, mdOptions, env, slf);
-    token.attrs = savedAttrs;
+  if (options.fenceAttrsOnPre && !hasCustomFence && typeof currentFence === 'function') {
+    md.renderer.rules.fence = function (tokens, idx, mdOptions, env, slf) {
+      const token = tokens[idx];
+      const savedAttrs = token.attrs ? token.attrs.slice() : null;
 
-    if (!savedAttrs || savedAttrs.length === 0) {
-      return result;
-    }
+      // Temporarily remove user attrs so the built-in renderer does not place
+      // them on <code>.
+      token.attrs = null;
+      const result = currentFence(tokens, idx, mdOptions, env, slf);
+      token.attrs = savedAttrs;
 
-    // Inject user attrs into the opening <pre> tag.
-    const attrsStr = slf.renderAttrs(token);
-    return result.replace(/^<pre([ >])/, (_, ch) => `<pre${attrsStr}${ch}`);
-  };
+      if (!savedAttrs || savedAttrs.length === 0) {
+        return result;
+      }
+
+      // Inject user attrs into the opening <pre> tag.
+      const attrsStr = slf.renderAttrs(token);
+      return result.replace(/^<pre([ >])/, (_, ch) => `<pre${attrsStr}${ch}`);
+    };
+  }
 };
 
 /**
