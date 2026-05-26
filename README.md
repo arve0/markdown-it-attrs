@@ -47,8 +47,7 @@ nums = [x for x in range(10)]
 
 Output:
 ```html
-<pre><code data="asdf" class="language-python">
-nums = [x for x in range(10)]
+<pre data="asdf"><code class="language-python">nums = [x for x in range(10)]
 </code></pre>
 ```
 
@@ -293,35 +292,53 @@ Output:
 If you need finer control, [decorate](https://github.com/rstacruz/markdown-it-decorate) might help you.
 
 ## Custom rendering
-If you would like some other output, you can override renderers:
+By default, fenced code block attributes are rendered on `<pre>`.
+
+If you prefer markdown-it's default behavior (attributes on `<code>`), opt out:
 
 ```js
 const md = require('markdown-it')();
 const markdownItAttrs = require('markdown-it-attrs');
 
-md.use(markdownItAttrs);
+md.use(markdownItAttrs, {
+  fenceAttrsOnPre: false
+});
+```
 
-// custom renderer for fences
+If you need fully custom output, define your own `fence` renderer. The plugin
+will not override an existing custom `fence` renderer.
+
+```js
+const md = require('markdown-it')();
+const markdownItAttrs = require('markdown-it-attrs');
+
 md.renderer.rules.fence = function (tokens, idx, options, env, slf) {
   const token = tokens[idx];
-  return  '<pre' + slf.renderAttrs(token) + '>'
-    + '<code>' + token.content + '</code>'
-    + '</pre>';
-}
+  const info = token.info ? token.info.trim() : '';
+  const langName = info ? info.split(/\s+/g)[0] : '';
+  const langClass = langName ? ' class="' + options.langPrefix + langName + '"' : '';
+  const content = md.utils.escapeHtml(token.content);
 
-let src = [
+  return '<pre' + slf.renderAttrs(token) + '><code' + langClass + '>'
+    + content
+    + '</code></pre>\n';
+};
+
+md.use(markdownItAttrs);
+
+const src = [
   '',
   '```js {.abcd}',
   'var a = 1;',
   '```'
-].join('\n')
+].join('\n');
 
 console.log(md.render(src));
 ```
 
 Output:
 ```html
-<pre class="abcd"><code>var a = 1;
+<pre class="abcd"><code class="language-js">var a = 1;
 </code></pre>
 ```
 
