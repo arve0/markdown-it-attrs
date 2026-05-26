@@ -73,6 +73,28 @@ describe('markdown-it-attrs fence renderer', () => {
     const res = md.render(src);
     assert.equal(res, '<pre><code class="language-js">foo();\n</code></pre>\n');
   });
+
+  it('should not override an existing custom fence renderer', () => {
+    const md = Md();
+    const customFence = (tokens, idx) => {
+      const token = tokens[idx];
+      return '<pre class="custom"><code>' + md.utils.escapeHtml(token.content) + '</code></pre>\n';
+    };
+    md.renderer.rules.fence = customFence;
+    md.use(attrs);
+
+    const src = '```js {data-file="index.js"}\nfoo();\n```';
+    const res = md.render(src);
+    assert.equal(md.renderer.rules.fence, customFence);
+    assert.equal(res, '<pre class="custom"><code>foo();\n</code></pre>\n');
+  });
+
+  it('should allow opting out of pre attrs renderer', () => {
+    const md = Md().use(attrs, { fenceAttrsOnPre: false });
+    const src = '```js {data-file="index.js"}\nfoo();\n```';
+    const res = md.render(src);
+    assert.equal(res, '<pre><code data-file="index.js" class="language-js">foo();\n</code></pre>\n');
+  });
 });
 
 function describeTestsWithOptions(options, postText) {
