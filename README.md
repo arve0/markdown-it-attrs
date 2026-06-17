@@ -8,6 +8,7 @@ Add classes, identifiers and attributes to your markdown with `{.class #identifi
 - [Support](#support)
 - [Usage](#usage)
 - [Security](#security)
+- [Error handling](#error-handling)
 - [Limitations](#limitations)
 - [Ambiguity](#ambiguity)
 - [Custom rendering](#custom-rendering)
@@ -135,6 +136,22 @@ Output:
 ```html
 <p id="red" class="green" regex="allowed">text</p>
 ```
+
+## Error handling
+
+By default, if a pattern transform throws an error, the error is logged with `console.error`
+and rendering continues with a best-effort result. Pass `errorHandler` to change this behavior:
+
+```js
+md.use(markdownItAttrs, {
+  errorHandler: (error, patternName) => {
+    throw error;
+  }
+});
+```
+
+If it throws the error like above, the error propagates out of `md.render()` / `md.renderInline()`,
+otherwise rendering continues as normal.
 
 ## Limitations
 markdown-it-attrs relies on markdown parsing in markdown-it, which means some

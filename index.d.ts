@@ -9,6 +9,7 @@ declare namespace markdownItAttrs {
     allowedAttributes?: AllowedAttribute[];
     allowedAttributeValues?: AllowedAttribute[];
     fenceAttrsOnPre?: boolean;
+    errorHandler?: (error: Error, patternName: string) => void;
   }
 }
 
