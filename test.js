@@ -97,6 +97,43 @@ describe('markdown-it-attrs fence renderer', () => {
   });
 });
 
+describe('markdown-it-attrs errorHandler', () => {
+  // input that makes a pattern transform throw
+  const failingSrc = '[test](test\r.com){.download download}';
+
+  it('should call errorHandler instead of logging when a transform throws', () => {
+    let called = null;
+    const md = Md().use(attrs, {
+      errorHandler: (error, patternName) => { called = { error, patternName }; }
+    });
+    md.renderInline(failingSrc);
+    assert.ok(called, 'errorHandler should have been called');
+    assert.ok(called.error instanceof Error);
+    assert.equal(typeof called.patternName, 'string');
+  });
+
+  it('should propagate the error when errorHandler throws', () => {
+    const md = Md().use(attrs, {
+      errorHandler: (error) => { throw error; }
+    });
+    assert.throws(() => md.renderInline(failingSrc), Error);
+  });
+
+  it('should not throw and fall back to console.error without errorHandler', () => {
+    const md = Md().use(attrs);
+    const original = console.error;
+    const logged = [];
+    console.error = (...args) => { logged.push(args.join(' ')); };
+    try {
+      assert.doesNotThrow(() => md.renderInline(failingSrc));
+    } finally {
+      console.error = original;
+    }
+    assert.ok(logged.length > 0, 'should log to console.error');
+    assert.ok(logged.some(msg => msg.includes('markdown-it-attrs')), 'should mention markdown-it-attrs');
+  });
+});
+
 function describeTestsWithOptions(options, postText) {
   describe('markdown-it-attrs.utils' + postText, () => {
     it(replaceDelimiters('should parse {.class ..css-module #id key=val .class.with.dot}', options), () => {
