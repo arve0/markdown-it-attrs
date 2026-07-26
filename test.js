@@ -701,6 +701,17 @@ function describeTestsWithOptions(options, postText) {
       expected = '<h2 id="my-id">H2 heading <a href="#">#</a></h2>\n';
       assert.equal(mdNav.render(src), expected);
     });
+
+
+    it('should not throw when using renderInline with a trailing {.class} (end of block pattern)', () => {
+      // renderInline() produces a token stream containing only the bare `inline` token,
+      // with no surrounding block tokens (no paragraph_open/paragraph_close). The
+      // 'end of block' pattern's transform walks past the end of that array looking
+      // for a block token to attach the attrs to, and crashes.
+      md = Md().use(attrs);
+      src = 'Some text{.text-danger}';
+      assert.doesNotThrow(() => { md.renderInline(src); });
+    });
   });
 }
 
