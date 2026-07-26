@@ -98,34 +98,38 @@ describe('markdown-it-attrs fence renderer', () => {
 });
 
 describe('markdown-it-attrs errorHandler', () => {
-  // input that makes a pattern transform throw
-  const failingSrc = '[test](test\r.com){.download download}';
+  // an allowedAttributes RegExp that throws an error on test/render
+  class ThrowingRegExp extends RegExp {
+    test () { throw new Error('transform failed'); }
+  }
+  const failingOptions = () => ({ allowedAttributes: [new ThrowingRegExp('.')] });
+  const src = 'text{.red}';
 
   it('should call errorHandler instead of logging when a transform throws', () => {
     let called = null;
-    const md = Md().use(attrs, {
+    const md = Md().use(attrs, Object.assign(failingOptions(), {
       errorHandler: (error, patternName) => { called = { error, patternName }; }
-    });
-    md.renderInline(failingSrc);
+    }));
+    md.render(src);
     assert.ok(called, 'errorHandler should have been called');
     assert.ok(called.error instanceof Error);
     assert.equal(typeof called.patternName, 'string');
   });
 
   it('should propagate the error when errorHandler throws', () => {
-    const md = Md().use(attrs, {
+    const md = Md().use(attrs, Object.assign(failingOptions(), {
       errorHandler: (error) => { throw error; }
-    });
-    assert.throws(() => md.renderInline(failingSrc), Error);
+    }));
+    assert.throws(() => md.render(src), Error);
   });
 
   it('should not throw and fall back to console.error without errorHandler', () => {
-    const md = Md().use(attrs);
+    const md = Md().use(attrs, failingOptions());
     const original = console.error;
     const logged = [];
     console.error = (...args) => { logged.push(args.join(' ')); };
     try {
-      assert.doesNotThrow(() => md.renderInline(failingSrc));
+      assert.doesNotThrow(() => md.render(src));
     } finally {
       console.error = original;
     }
