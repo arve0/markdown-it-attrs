@@ -480,7 +480,8 @@ module.exports = options => {
         const content = token.content;
         const attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
         let ii = i + 1;
-        do if (tokens[ii] && tokens[ii].nesting === -1) { break; } while (ii++ < tokens.length);
+        while (ii < tokens.length && tokens[ii].nesting !== -1) { ii++; }
+        if (ii >= tokens.length) { return; }
         const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
         const trimmed = content.slice(0, utils.findLeftDelimiter(content, options));
