@@ -13,6 +13,6 @@ declare namespace markdownItAttrs {
   }
 }
 
-declare function markdownItAttrs(md: MarkdownIt, options?: markdownItAttrs.Options): void;
+declare function markdownItAttrs(md: InstanceType<typeof MarkdownIt>, options?: markdownItAttrs.Options): void;
 
 export = markdownItAttrs;
