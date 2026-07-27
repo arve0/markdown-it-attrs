@@ -28,6 +28,13 @@ const options: markdownItAttrs.Options = {
 };
 md.use(markdownItAttrs, options);
 
+// Should compile without errors: calling the plugin function directly with a MarkdownIt instance.
+// This exercises the `md` parameter type and catches TS2709 ("Cannot use namespace 'MarkdownIt'
+// as a type") that occurs in TypeScript <6 when `MarkdownIt` is used directly as a type
+// annotation for a parameter in a .d.ts file.
+markdownItAttrs(md);
+markdownItAttrs(md, { leftDelimiter: '{', rightDelimiter: '}' });
+
 // Verify the plugin function signature is compatible with MarkdownIt.PluginWithOptions
 const plugin: MarkdownIt.PluginWithOptions<markdownItAttrs.Options> = markdownItAttrs;
 md.use(plugin, options);
