@@ -20,6 +20,7 @@ var patternsConfig = require('./patterns.js');
  * @property {AllowedAttribute[]} allowedAttributes empty means no limit
  * @property {AllowedAttribute[]} allowedAttributeValues empty means no limit
  * @property {boolean} fenceAttrsOnPre set fenced-code attrs on <pre>, default true
+ * @property {(error: Error, patternName: string) => void} errorHandler called when a pattern transform throws; default logs via console.error
  *
  * @typedef {string|RegExp} AllowedAttribute rule of allowed attribute
  *
@@ -98,9 +99,13 @@ module.exports = function attributes(md, options_) {
               _p--;
             }
           } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error("markdown-it-attrs: Error in pattern '".concat(pattern.name, "': ").concat(error.message));
-            console.error(error.stack);
+            if (typeof options.errorHandler === 'function') {
+              options.errorHandler(error, pattern.name);
+            } else {
+              // eslint-disable-next-line no-console
+              console.error("markdown-it-attrs: Error in pattern '".concat(pattern.name, "': ").concat(error.message));
+              console.error(error.stack);
+            }
           }
         }
         p = _p;
@@ -9113,9 +9118,12 @@ module.exports = function (options) {
       var content = token.content;
       var attrs = utils.getAttrs(content, utils.findLeftDelimiter(content, options), options);
       var ii = i + 1;
-      do if (tokens[ii] && tokens[ii].nesting === -1) {
-        break;
-      } while (ii++ < tokens.length);
+      while (ii < tokens.length && tokens[ii].nesting !== -1) {
+        ii++;
+      }
+      if (ii >= tokens.length) {
+        return;
+      }
       var openingToken = utils.getMatchingOpeningToken(tokens, ii);
       utils.addAttrs(attrs, openingToken);
       var trimmed = content.slice(0, utils.findLeftDelimiter(content, options));
