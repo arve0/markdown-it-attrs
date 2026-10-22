@@ -275,6 +275,22 @@ function describeTestsWithOptions(options, postText) {
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
     });
 
+    [
+      ['emphasis', '*e*', '<em data-a="x}y">e</em>'],
+      ['code', '`c`', '<code data-a="x}y">c</code>'],
+      ['link', '[l](/u)', '<a href="/u" data-a="x}y">l</a>'],
+      ['image', '![i](/i)', '<img src="/i" alt="i" data-a="x}y">']
+    ].forEach(([name, inline, html]) => {
+      ['', ' following text'].forEach(tail => {
+        const suffix = tail ? ' without removing following text' : '';
+        it('should consume quoted right delimiters after ' + name + suffix, () => {
+          src = inline + '{data-a="x}y"}' + tail;
+          expected = '<p>' + html + tail + '</p>\n';
+          assert.equal(md.render(replaceDelimiters(src, options)), replaceDelimiters(expected, options));
+        });
+      });
+    });
+
     it(replaceDelimiters('should not add classes to inline elements with too many {{}}', options), () => {
       src = 'paragraph **bold**{{.red}} asdf';
       expected = '<p>paragraph <strong>bold</strong>{{.red}} asdf</p>\n';
