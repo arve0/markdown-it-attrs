@@ -67,7 +67,7 @@ module.exports = options => {
        */
       transform: (tokens, i, j) => {
         const token = tokens[i].children[j];
-        const endChar = token.content.indexOf(options.rightDelimiter);
+        const endChar = utils.findRightDelimiter(token.content, options.leftDelimiter.length, options);
         const attrToken = tokens[i].children[j - 1];
         const attrs = utils.getAttrs(token.content, 0, options);
         utils.addAttrs(attrs, attrToken);
@@ -276,7 +276,8 @@ module.exports = options => {
         const attrs = utils.getAttrs(content, 0, options);
         const openingToken = utils.getMatchingOpeningToken(tokens[i].children, j - 1);
         utils.addAttrs(attrs, openingToken);
-        token.content = content.slice(content.indexOf(options.rightDelimiter) + options.rightDelimiter.length);
+        const endChar = utils.findRightDelimiter(content, options.leftDelimiter.length, options);
+        token.content = content.slice(endChar + options.rightDelimiter.length);
       }
     }, {
       /**

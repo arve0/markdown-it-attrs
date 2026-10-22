@@ -344,6 +344,7 @@ function findRightDelimiter (str, start, options) {
   }
   return -1;
 }
+exports.findRightDelimiter = findRightDelimiter;
 
 /**
  * Find last left delimiter index outside quoted values.
