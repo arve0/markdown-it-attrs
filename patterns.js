@@ -176,28 +176,43 @@ module.exports = options => {
         if (calc < 2) { return; }
 
         const level = tokens[i].level + 2;
+        // Foreign rowspans have already removed cells, but still occupy columns.
+        const foreignColumns = new Map();
+        for (let n = idx; n < i; n++) {
+          const token = tokens[n];
+          if (token.type !== 'td_open' || token.level !== level || token.hidden
+            || (token.meta && token.meta.attrsSpans && token.meta.attrsSpans.rowspan)) { continue; }
+          const rows = token.attrGet('rowspan') >> 0;
+          const cols = Math.max(1, token.attrGet('colspan') >> 0);
+          for (let k = n, num = rows; k < i && num > 1; k++) {
+            if (tokens[k].type === 'tr_open' && tokens[k].level === level - 1) {
+              foreignColumns.set(k, (foreignColumns.get(k) || 0) + cols);
+              num--;
+            }
+          }
+        }
+
         for (let n = idx; n < i; n++) {
           if (tokens[n].level > level) { continue; }
 
           const token = tokens[n];
-          const rows = token.hidden ? 0 : token.attrGet('rowspan') >> 0;
+          const spans = token.meta && token.meta.attrsSpans;
+          const rows = token.hidden || !spans || !spans.rowspan ? 0 : token.attrGet('rowspan') >> 0;
           const cols = token.hidden ? 0 : token.attrGet('colspan') >> 0;
 
           if (rows > 1) {
-            let colsnum = calc - (cols > 0 ? cols : 1);
-            for (let k = n, num = rows; k < i, num > 1; k++) {
+            for (let k = n, num = rows; k < i && num > 1; k++) {
               if ('tr_open' == tokens[k].type) {
                 tokens[k].meta = Object.assign({}, tokens[k].meta);
-                if (tokens[k].meta && tokens[k].meta.colsnum) {
-                  colsnum -= 1;
-                }
-                tokens[k].meta.colsnum = colsnum;
+                const colsnum = tokens[k].meta.colsnum === undefined
+                  ? calc - (foreignColumns.get(k) || 0) : tokens[k].meta.colsnum;
+                tokens[k].meta.colsnum = colsnum - (cols > 0 ? cols : 1);
                 num--;
               }
             }
           }
 
-          if ('tr_open' == token.type && token.meta && token.meta.colsnum) {
+          if ('tr_open' == token.type && token.meta && token.meta.colsnum !== undefined) {
             const max = token.meta.colsnum;
             for (let k = n, num = 0; k < i; k++) {
               if ('td_open' == tokens[k].type) {
@@ -209,7 +224,7 @@ module.exports = options => {
             }
           }
 
-          if (cols > 1) {
+          if (cols > 1 && spans && spans.colspan) {
             /** @type {number[]} index of one row's children */
             const one = [];
             /** last index of the row's children */
