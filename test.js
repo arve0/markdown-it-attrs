@@ -51,6 +51,24 @@ describe('markdown-it-attrs', () => {
     assert.equal(md.render(src), expected);
   });
 
+  it('should preserve spans already laid out by another table plugin', () => {
+    const sources = [
+      '| A | B | C |\n| -- | -- | -- |\n'
+        + '| Row 1 | Shared B | Shared C |\n'
+        + '| Row 2 | ^^ | ^^ |\n| Row 3 | ^^ | ^^ |\n'
+        + '| Row 4 | ^^ | ^^ |\n| Row 5 | ^^ | ^^ |\n',
+      '| A | B | C |\n| -- | -- | -- |\n| Merged || Tail |\n'
+    ];
+    const attrsBeforeTable = Md().use(attrs).use(multimdTable, { rowspan: true });
+    const attrsAfterTable = Md().use(multimdTable, { rowspan: true }).use(attrs);
+    const withoutAttrs = Md().use(multimdTable, { rowspan: true });
+    for (const source of sources) {
+      const expectedTable = withoutAttrs.render(source);
+      assert.equal(attrsBeforeTable.render(source), expectedTable);
+      assert.equal(attrsAfterTable.render(source), expectedTable);
+    }
+  });
+
   it('should parse attribute values containing closing curly braces in quotes', () => {
     md = Md().use(attrs);
     src = 'this is the markdown I\'m trying to parse {.replace-me data-tex="e^{i}=-1"}';
@@ -583,6 +601,78 @@ function describeTestsWithOptions(options, postText) {
       expected += '</tbody>\n';
       expected += '</table>\n';
       assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it(replaceDelimiters('should apply multiple rowspans independently to each row', options), () => {
+      src = '| A | B | C |\n| -- | -- | -- |\n'
+        + '| Row 1 | Shared B {rowspan=5} | Shared C {rowspan=5} |\n'
+        + '| Row 2 | hidden | hidden |\n| Row 3 | hidden | hidden |\n'
+        + '| Row 4 | hidden | hidden |\n| Row 5 | hidden | hidden |\n';
+      expected = '<tbody>\n<tr>\n<td>Row 1</td>\n'
+        + '<td rowspan="5">Shared B</td>\n<td rowspan="5">Shared C</td>\n</tr>\n';
+      for (let row = 2; row <= 5; row++) {
+        expected += `<tr>\n<td>Row ${row}</td>\n</tr>\n`;
+      }
+      expected += '</tbody>';
+      assert.equal(md.render(replaceDelimiters(src, options)).match(/<tbody>[\s\S]*?<\/tbody>/)[0], expected);
+    });
+
+    it(replaceDelimiters('should hide cells when rowspans fill every column', options), () => {
+      src = '| A | B |\n| -- | -- |\n'
+        + '| Shared A {rowspan=3} | Shared B {rowspan=3} |\n'
+        + '| hidden | hidden |\n| hidden | hidden |\n';
+      expected = '<tbody>\n<tr>\n<td rowspan="3">Shared A</td>\n'
+        + '<td rowspan="3">Shared B</td>\n</tr>\n<tr></tr>\n<tr></tr>\n</tbody>';
+      assert.equal(md.render(replaceDelimiters(src, options)).match(/<tbody>[\s\S]*?<\/tbody>/)[0], expected);
+    });
+
+    it(replaceDelimiters('should stop rowspan calculations at the end of the table', options), () => {
+      md = Md().use(attrs, Object.assign({}, options, {
+        errorHandler: error => { throw error; }
+      }));
+      src = '| A | B |\n| -- | -- |\n'
+        + '| First | Shared {rowspan=9} |\n| Second | hidden |\n';
+      expected = '<tbody>\n<tr>\n<td>First</td>\n<td rowspan="9">Shared</td>\n'
+        + '</tr>\n<tr>\n<td>Second</td>\n</tr>\n</tbody>';
+      assert.equal(md.render(replaceDelimiters(src, options)).match(/<tbody>[\s\S]*?<\/tbody>/)[0], expected);
+    });
+
+    it(replaceDelimiters('should add a class without recalculating foreign rowspans', options), () => {
+      const plain = '| A | B | C |\n| -- | -- | -- |\n'
+        + '| Row 1 | Shared B | Shared C |\n'
+        + '| Row 2 | ^^ | ^^ |\n| Row 3 | ^^ | ^^ |\n'
+        + '| Row 4 | ^^ | ^^ |\n| Row 5 | ^^ | ^^ |\n';
+      expected = Md().use(multimdTable, { rowspan: true }).render(plain)
+        .replace('<td>Row 1</td>', '<td class="label">Row 1</td>');
+      md = Md().use(multimdTable, { rowspan: true }).use(attrs, options);
+      src = plain.replace('Row 1 |', 'Row 1 {.label} |');
+      assert.equal(md.render(replaceDelimiters(src, options)), expected);
+    });
+
+    it(replaceDelimiters('should account for foreign rowspans beside attrs rowspans', options), () => {
+      for (const wide of [false, true]) {
+        src = wide ? '| A | B | C | D |\n| -- | -- | -- | -- |\n'
+          : '| A | B | C |\n| -- | -- | -- |\n';
+        src += wide ? '| AA || BB {rowspan=2} | CC |\n| ^^ || remaining | ignored |\n'
+          : '| AA | BB {rowspan=2} | CC |\n| ^^ | remaining | ignored |\n';
+        expected = '<tbody>\n<tr>\n<td' + (wide ? ' colspan="2"' : '') + ' rowspan="2">AA</td>\n'
+          + '<td rowspan="2">BB</td>\n<td>CC</td>\n</tr>\n'
+          + '<tr>\n<td>remaining</td>\n</tr>\n</tbody>';
+        for (const attrsFirst of [false, true]) {
+          md = attrsFirst ? Md().use(attrs, options).use(multimdTable, { rowspan: true })
+            : Md().use(multimdTable, { rowspan: true }).use(attrs, options);
+          assert.equal(md.render(replaceDelimiters(src, options)).match(/<tbody>[\s\S]*?<\/tbody>/)[0], expected);
+        }
+      }
+    });
+
+    it(replaceDelimiters('should retain short table rows beside attrs rowspans', options), () => {
+      md = Md().use(multimdTable, { rowspan: true }).use(attrs, options);
+      src = '| A | B | C |\n| -- | -- | -- |\n'
+        + '| AA | BB {rowspan=2} | CC |\n| remaining |\n';
+      expected = '<tbody>\n<tr>\n<td>AA</td>\n<td rowspan="2">BB</td>\n<td>CC</td>\n'
+        + '</tr>\n<tr>\n<td>remaining</td>\n</tr>\n</tbody>';
+      assert.equal(md.render(replaceDelimiters(src, options)).match(/<tbody>[\s\S]*?<\/tbody>/)[0], expected);
     });
 
     it(replaceDelimiters('should support nested lists', options), () => {

@@ -152,6 +152,11 @@ exports.addAttrs = function (attrs, token) {
     } else {
       token.attrSet(key, attrs[j][1]);
     }
+    // Other plugins may already have laid out their own table spans.
+    if (token.type === 'td_open' && (key === 'rowspan' || key === 'colspan')) {
+      token.meta = Object.assign({}, token.meta);
+      token.meta.attrsSpans = Object.assign({}, token.meta.attrsSpans, { [key]: true });
+    }
   }
   return token;
 };
